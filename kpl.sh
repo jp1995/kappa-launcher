@@ -56,7 +56,7 @@ while [[ $x -le 1 ]]; do
   CHOICE=$(echo "$STATUS
 
 <b>Watch now</b>
-Back to Followed Channels" | _rofi -width 35 -lines 5 -selected-row 2 -markup-rows \
+Back to Followed Channels" | _rofi -selected-row 2 -markup-rows \
 -p "$MAIN is streaming $CURRENT_GAME to $VIEWERS viewers")
 
   if [[ "$CHOICE" = "<b>Watch now</b>" ]]; then
