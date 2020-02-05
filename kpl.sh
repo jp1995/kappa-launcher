@@ -1,15 +1,5 @@
 #!/bin/bash
 
-# Setting working directory
-if [ -z "$XDG_CONFIG_HOME" ]; then
-  MAIN_PATH=~/kpl
-else
-  MAIN_PATH="$XDG_CONFIG_HOME/kpl/"
-fi
-
-# Grab configuration file
-source $MAIN_PATH/config
-
 # Checking dependencies
 JQ_BIN="$(whereis -b jq | awk '{print $2}')"
 ROFI_BIN="$(whereis -b rofi | awk '{print $2}')"
@@ -23,18 +13,53 @@ if [ -z "$ROFI_BIN" ]; then
   exit 1
 fi
 
-# General rofi parameters
+# Some functions
 _rofi () {
   rofi -dmenu -i -no-custom -no-levenshtein-sort -disable-history -scroll-method 1 \
   -theme-str 'inputbar { children: [prompt];}' "$@"
 }
+
+_config () {
+  mkdir -p $MAIN_PATH
+  cat << EOF >$FILE
+# Either streamlink or browser, default streamlink
+PLAYER=streamlink
+
+# Chat client. Either chatterino or chatty, default chatterino. Irrelevant when using browser.
+CHAT=chatterino
+EOF
+}
+
+_filecheck () {
+  if [ -f "$FILE" ]; then
+    echo "Configuration file found, proceeding"
+  else
+    echo "Configuration file not found, generating it now"
+    _config
+  fi
+}
+
+# Setting working directory, checking for configuration file, generating it if needed
+
+if [ -z "$XDG_CONFIG_HOME" ]; then
+  FILE=~/.config/kpl/config
+  MAIN_PATH=~/.config/kpl
+  _filecheck
+else
+  FILE=$XDG_CONFIG_HOME/kpl/config
+  MAIN_PATH=$XDG_CONFIG_HOME/kpl
+  _filecheck
+fi
+
+# Grab configuration file
+source $MAIN_PATH/config
 
 # Setting OAuth key, connecting to Twitch API and retrieving followed data
 # This is a slightly edited version of https://github.com/begs/livestreamers/blob/master/live.py
 
 curl -s -o $MAIN_PATH/followdata.json -H 'Accept: application/vnd.twitchtv.v5+json' \
 -H 'Client-ID: 3lyhpjkzellmam3843w7eq3es84375' \
--H 'Authorization: OAuth 71ptfgoixj0vrold0y8mxf7yq3ck4j' \
+-H 'Authorization: OAuth ***' \
 -X GET 'https://api.twitch.tv/kraken/streams/followed' \
 
 # Getting names of currently live streams
