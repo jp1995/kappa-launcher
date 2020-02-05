@@ -4,8 +4,7 @@ Kappa Launcher
 
 Kappa Launcher is a simple bash script that uses rofi to display and launch your followed Twitch streams
 
-Example:
-![output](https://cdn.discordapp.com/attachments/534004815160934410/674737808677535757/ezgif.com-optimize.gif)
+![output](https://cdn.discordapp.com/attachments/534004815160934410/674739062338355227/klm-optimized.gif)
 
 ## Features
 
@@ -32,3 +31,9 @@ Requirements include rofi, jq and xdg-utils. It's likely that you have the latte
 I am not a programmer. This code is probably ugly, and could probably be written in a more clean, concise way. I welcome suggestions and constructive criticism.
 
 In the future I might try displaying the game and viewer number alongside the streams in separate columns. I researched this idea and I didn't find an obvious way to achieve this.
+
+i3 users (like me) can edit the launcher function to include some layout solution to further automatize the process. For example:
+```
+i3-msg "workspace number 3" &&
+exec layout_manager.sh TWITCH
+```
