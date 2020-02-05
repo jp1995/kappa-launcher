@@ -5,7 +5,7 @@ Kappa Launcher
 Kappa Launcher is a simple bash script that uses rofi to display and launch your followed Twitch streams
 
 Example:
-![output](https://cdn.discordapp.com/attachments/534004815160934410/674725457937301504/klm.gif)
+![output](https://cdn.discordapp.com/attachments/534004815160934410/674737808677535757/ezgif.com-optimize.gif)
 
 ## Features
 
@@ -25,7 +25,7 @@ On first launch the script creates a configuration file in .config/kpl. You must
 
 Once you have done this, simply run the script again.
 
-Dependencies include rofi, jq and xdg-utils. It's likely that you have the latter two installed. Optionally, you'll also need streamlink, chatterino and/or chatty.
+Requirements include rofi, jq and xdg-utils. It's likely that you have the latter two installed. Optionally, you'll also need streamlink, chatterino and/or chatty.
 
 ## Additional info
 
