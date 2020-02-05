@@ -20,11 +20,11 @@ _config () {
 # Either streamlink or browser, default streamlink
 PLAYER=streamlink
 
-# Chat client. Either chatterino or chatty, default chatterino. Irrelevant when using browser.
+# Either chatterino or chatty, default chatterino. Irrelevant when using browser.
 CHAT=chatterino
 
 # OAuth
-OAUTH=
+OAUTH=replace_this_with_oauth_string
 EOF
 }
 
