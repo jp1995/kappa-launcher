@@ -40,7 +40,7 @@ _filecheck () {
 }
 
 _rofi () {
-  rofi -dmenu -i -no-levenshtein-sort -disable-history -scroll-method 1 -theme-str "$@"
+  rofi -dmenu -i -no-levenshtein-sort -disable-history -scroll-method 1 "$@"
 }
 
 _launcher () {
@@ -92,7 +92,7 @@ while [[ $x -le 1 ]]; do
   STREAMS=$(jq -r '.streams[].channel.display_name' $MAIN_PATH/followdata.json)
 
   # Listing said streams with rofi
-  MAIN=$(echo "$STREAMS" | _rofi 'inputbar { children: [prompt,entry];}' -p "Followed channels: ")
+  MAIN=$(echo "$STREAMS" | _rofi -theme-str 'inputbar { children: [prompt,entry];}' -p "Followed channels: ")
   if [[ "$STREAMS" != *"$MAIN"* ]]; then
     _launcher
   elif [ -z "$MAIN" ]; then
@@ -107,7 +107,7 @@ while [[ $x -le 1 ]]; do
     CHOICE=$(echo "$STATUS
 
 <b>Watch now</b>
-Back to Followed Channels" | _rofi 'inputbar { children: [prompt];}' -selected-row 2 -no-custom -markup-rows -p "$MAIN is streaming $CURRENT_GAME to $VIEWERS viewers")
+Back to Followed Channels" | _rofi -theme-str 'inputbar { children: [prompt];}' -selected-row 2 -no-custom -markup-rows -p "$MAIN is streaming $CURRENT_GAME to $VIEWERS viewers")
 
     if [[ "$CHOICE" = "<b>Watch now</b>" ]]; then
       _launcher
