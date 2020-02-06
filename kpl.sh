@@ -3,14 +3,19 @@
 # Checking dependencies
 JQ_BIN="$(whereis -b jq | awk '{print $2}')"
 ROFI_BIN="$(whereis -b rofi | awk '{print $2}')"
+STREAMLINK_BIN="$(whereis -b streamlink |awk '{print $2}')"
 
 if [ -z "$JQ_BIN" ]; then
-  echo "ERROR: Kappa launcher dependency not found: jq"
+  echo "ERROR: Kappa Launcher dependency not found: jq"
   exit 1
 fi
 if [ -z "$ROFI_BIN" ]; then
-  echo "ERROR: Kappa launcher dependency not found: rofi"
+  echo "ERROR: Kappa Launcher dependency not found: rofi"
   exit 1
+fi
+if [ -z "$STREAMLINK_BIN" ]; then
+  echo "ERROR: Kappa Launcher dependency not found: streamlink"
+  echo "If you only intend to use the browser function, you will not need this"
 fi
 
 # Some functions
@@ -89,6 +94,7 @@ curl -s -o $MAIN_PATH/followdata.json -H "Accept: application/vnd.twitchtv.v5+js
 -H "Authorization: OAuth $OAUTH" \
 -X GET "https://api.twitch.tv/kraken/streams/followed" \
 
+# Checking
 if grep -q "invalid oauth token" "$MAIN_PATH/followdata.json"; then
   echo "ERROR: json file not populated, make sure you only copied your OAuth string, and not the preceeding 'oauth:' section"
   exit
