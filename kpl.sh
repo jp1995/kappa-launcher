@@ -5,11 +5,11 @@ JQ_BIN="$(whereis -b jq | awk '{print $2}')"
 ROFI_BIN="$(whereis -b rofi | awk '{print $2}')"
 
 if [ -z "$JQ_BIN" ]; then
-  echo "Kappa launcher dependency not found: jq"
+  echo "ERROR: Kappa launcher dependency not found: jq"
   exit 1
 fi
 if [ -z "$ROFI_BIN" ]; then
-  echo "Kappa launcher dependency not found: rofi"
+  echo "ERROR: Kappa launcher dependency not found: rofi"
   exit 1
 fi
 
@@ -32,9 +32,12 @@ _filecheck () {
   if [ -f "$FILE" ]; then
     echo "Configuration file found, proceeding"
   else
-    echo "Configuration file not found, generating it now"
+    echo "First start detected, generating configuration file"
     _config
-    echo "Configuration file generated successfully in .config/kpl, please edit it with your OAuth key"
+    echo ""
+    echo "Configuration file created in .config/kpl"
+    echo ""
+    echo "Edit it with your OAuth key and relaunch the script"
     exit
   fi
 }
@@ -53,12 +56,12 @@ _launcher () {
     elif [[ "$CHAT" = "chatty" ]]; then
       chatty
     else
-      echo "Chat not defined in config file"
+      echo "ERROR: Chat not defined in config file"
     fi
   elif [[ "$PLAYER" = "browser" ]]; then
     xdg-open https://twitch.tv/$MAIN
   else
-    echo "Player not defined in config file"
+    echo "ERROR: Player not defined in config file"
   fi
   x=$(( $x + 1))
 }
@@ -85,6 +88,13 @@ curl -s -o $MAIN_PATH/followdata.json -H "Accept: application/vnd.twitchtv.v5+js
 -H "Client-ID: 3lyhpjkzellmam3843w7eq3es84375" \
 -H "Authorization: OAuth $OAUTH" \
 -X GET "https://api.twitch.tv/kraken/streams/followed" \
+
+if grep -q broadcast_platform "$MAIN_PATH/followdata.json"; then
+  echo "json file successfully populated"
+else
+  echo "ERROR: json file not populated, make sure you only copied your OAuth string, and not the preceeding oauth: section"
+  exit
+fi
 
 # Getting names of currently live streams
 x=1
