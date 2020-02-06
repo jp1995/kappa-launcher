@@ -8,19 +8,15 @@ Kappa Launcher is a simple bash script that uses rofi to display and launch your
 
 ## Features
 
-Displays all live Twitch streams that you follow.
-
-Shows information about these streams, such as the currently played game, number of viewers and title.
-
-Launches said streams
-
-Supports streamlink, chatterino, chatty or just plain twitch in a browser.
-
-Streams that you don't follow can also be launched
+* Displays all live Twitch streams that you follow.
+* Shows information about these streams, such as the currently played game, number of viewers and title.
+* Launches said streams
+* Supports streamlink, chatterino, chatty or just plain twitch in a browser.
+* Streams that you don't follow can also be launched
 
 ## Instructions
 
-On first launch the script creates a configuration file in .config/kpl. You must then edit this file with your Twitch [OAuth token](https://twitchapps.com/tmi/). If you wish, you can also change the PLAYER and CHAT options.
+On first launch the script creates a configuration file in .config/kpl. You must then edit this file with your [Twitch OAuth token](https://twitchapps.com/tmi/). If you wish, you can also change the PLAYER and CHAT options.
 
 Once you have done this, simply run the script again.
 
