@@ -20,7 +20,7 @@ On first launch the script creates a configuration file in .config/kpl. You must
 
 Once you have done this, simply run the script again.
 
-Requirements include rofi, jq and streamlink. Optionally, you'll also need chatterino or chatty and xdg-utils for the browser fuction.
+Requirements include rofi, jq and streamlink. Optionally, you'll also need chatterino or chatty for the chat client and xdg-utils for the browser fuction.
 
 ## Additional info
 
