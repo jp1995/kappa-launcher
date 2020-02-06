@@ -89,11 +89,11 @@ curl -s -o $MAIN_PATH/followdata.json -H "Accept: application/vnd.twitchtv.v5+js
 -H "Authorization: OAuth $OAUTH" \
 -X GET "https://api.twitch.tv/kraken/streams/followed" \
 
-if grep -q broadcast_platform "$MAIN_PATH/followdata.json"; then
-  echo "json file successfully populated"
-else
-  echo "ERROR: json file not populated, make sure you only copied your OAuth string, and not the preceeding oauth: section"
+if grep -q "invalid oauth token" "$MAIN_PATH/followdata.json"; then
+  echo "ERROR: json file not populated, make sure you only copied your OAuth string, and not the preceeding 'oauth:' section"
   exit
+else
+  echo "json file successfully populated"
 fi
 
 # Getting names of currently live streams
