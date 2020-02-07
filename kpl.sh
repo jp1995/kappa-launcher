@@ -68,6 +68,7 @@ _launcher () {
   else
     echo "ERROR: Player not defined in config file"
   fi
+  y=$(( $x + 1))
   x=$(( $x + 1))
 }
 
@@ -94,7 +95,7 @@ curl -s -o $MAIN_PATH/followdata.json -H "Accept: application/vnd.twitchtv.v5+js
 -H "Authorization: OAuth $OAUTH" \
 -X GET "https://api.twitch.tv/kraken/streams/followed" \
 
-# Checking
+# Checking if json file is properly populated
 if grep -q "invalid oauth token" "$MAIN_PATH/followdata.json"; then
   echo "ERROR: json file not populated, make sure you only copied your OAuth string, and not the preceeding 'oauth:' section"
   exit
@@ -104,7 +105,9 @@ fi
 
 # Getting names of currently live streams
 x=1
+y=1
 while [[ $x -le 1 ]]; do
+  y=1
   STREAMS=$(jq -r '.streams[].channel.display_name' $MAIN_PATH/followdata.json)
 
   # Listing said streams with rofi
@@ -118,22 +121,27 @@ while [[ $x -le 1 ]]; do
     CURRENT_GAME=$(jq -r ".streams[].channel | select(.display_name==\"$MAIN\") | .game"  $MAIN_PATH/followdata.json)
     STATUS=$(jq -r ".streams[].channel | select(.display_name==\"$MAIN\") | .status"  $MAIN_PATH/followdata.json)
     VIEWERS=$(jq -r ".streams[] | select(.channel.display_name==\"$MAIN\") | .viewers"  $MAIN_PATH/followdata.json)
-    RESOLUTION=$(streamlink twitch.tv/$MAIN | grep -i  audio_only | cut -c 19- | tr , '\n' | tac | cut -d ' ' -f 2)
+    QUALITY=best
 
     # Prompting with stream info and options
+    while [[ $y -le 1 ]]; do
     CHOICE=$(echo "$STATUS
 
 <b>Watch now</b>
+Choose quality (default = best)
 Back to Followed Channels" | _rofi -theme-str 'inputbar { children: [prompt];}' -selected-row 2 -no-custom -markup-rows -p "$MAIN is streaming $CURRENT_GAME to $VIEWERS viewers")
 
     if [[ "$CHOICE" = "<b>Watch now</b>" ]]; then
-      QUALITY=$(echo "$RESOLUTION" | _rofi -theme-str 'inputbar { children: [prompt];}' -no-custom -width 35 -lines 5 -markup-rows -p "Select stream quality")
       _launcher
+    elif [[ "$CHOICE" = "Choose quality (default = best)" ]]; then
+      RESOLUTION=$(streamlink twitch.tv/$MAIN | grep -i  audio_only | cut -c 19- | tr , '\n' | tac | cut -d ' ' -f 2)
+      QUALITY=$(echo "$RESOLUTION" | _rofi -theme-str 'inputbar { children: [prompt];}' -no-custom -p "Select stream quality")
     elif [[ "$CHOICE" = "Back to Followed Channels" ]]; then
-      return
+      y=$(( $x + 1))
     else [ -z "$MAIN" ];
       exit
     fi
+  done
   fi
-
 done
+exit
