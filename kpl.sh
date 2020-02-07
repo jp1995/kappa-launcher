@@ -140,6 +140,7 @@ Back to Followed Channels" | _rofi -theme-str 'inputbar { children: [prompt];}' 
       _launcher
     elif [[ "$CHOICE" = "Choose quality (default = best)" ]]; then
       _quality
+      _launcher
     elif [[ "$CHOICE" = "Back to Followed Channels" ]]; then
       y=$(( $x + 1))
     else [ -z "$MAIN" ];
