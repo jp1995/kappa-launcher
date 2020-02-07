@@ -54,7 +54,7 @@ _rofi () {
 _launcher () {
   if [[ "$PLAYER" = "streamlink" ]]; then
     killall -9 vlc &    # This is required because VLC is annoying. If you use a different media player, remove this line.
-    streamlink twitch.tv/$MAIN best &
+    streamlink twitch.tv/$MAIN $QUALITY &
     echo "launching $PLAYER"
     if [[ "$CHAT" = "chatterino" ]]; then
       chatterino &
@@ -118,6 +118,7 @@ while [[ $x -le 1 ]]; do
     CURRENT_GAME=$(jq -r ".streams[].channel | select(.display_name==\"$MAIN\") | .game"  $MAIN_PATH/followdata.json)
     STATUS=$(jq -r ".streams[].channel | select(.display_name==\"$MAIN\") | .status"  $MAIN_PATH/followdata.json)
     VIEWERS=$(jq -r ".streams[] | select(.channel.display_name==\"$MAIN\") | .viewers"  $MAIN_PATH/followdata.json)
+    RESOLUTION=$(streamlink twitch.tv/$MAIN | grep -i  audio_only | cut -c 19- | tr , '\n' | tac | cut -d ' ' -f 2)
 
     # Prompting with stream info and options
     CHOICE=$(echo "$STATUS
@@ -126,6 +127,7 @@ while [[ $x -le 1 ]]; do
 Back to Followed Channels" | _rofi -theme-str 'inputbar { children: [prompt];}' -selected-row 2 -no-custom -markup-rows -p "$MAIN is streaming $CURRENT_GAME to $VIEWERS viewers")
 
     if [[ "$CHOICE" = "<b>Watch now</b>" ]]; then
+      QUALITY=$(echo "$RESOLUTION" | _rofi -theme-str 'inputbar { children: [prompt];}' -no-custom -width 35 -lines 5 -markup-rows -p "Select stream quality")
       _launcher
     elif [[ "$CHOICE" = "Back to Followed Channels" ]]; then
       return
