@@ -70,11 +70,20 @@ _launcher () {
   fi
   y=$(( $x + 1))
   x=$(( $x + 1))
+  z=$(( $z + 1))
 }
 
 _quality () {
   RESOLUTION=$(streamlink twitch.tv/$MAIN | grep -i  audio_only | cut -c 19- | tr , '\n' | tac | cut -d ' ' -f 2)
   QUALITY=$(echo "$RESOLUTION" | _rofi -theme-str 'inputbar { children: [prompt];}' -no-custom -p "Select stream quality")
+  if [ -z "$QUALITY" ]; then
+    exit
+  fi
+}
+
+_customdata () {
+  curl -s -o $MAIN_PATH/customdata.json -H "Client-ID: 3lyhpjkzellmam3843w7eq3es84375" \
+  -X GET "https://api.twitch.tv/helix/streams?user_login=$MAIN"
 }
 
 # Setting working directory, checking for configuration file, generating it if needed
@@ -110,7 +119,6 @@ fi
 
 # Getting names of currently live streams
 x=1
-y=1
 while [[ $x -le 1 ]]; do
   y=1
   QUALITY=best
@@ -119,7 +127,32 @@ while [[ $x -le 1 ]]; do
   # Listing said streams with rofi
   MAIN=$(echo "$STREAMS" | _rofi -theme-str 'inputbar { children: [prompt,entry];}' -p "Followed channels: ")
   if [[ "$STREAMS" != *"$MAIN"* ]]; then
-    _launcher
+    z=1
+    while [[ $z -le 1 ]]; do
+      _customdata
+      if grep -q "user_name" "$MAIN_PATH/customdata.json" ; then
+        CUSTOM=$(echo "<b>Watch now</b>
+Choose quality (default = best)
+Back to Followed channels" | _rofi -theme-str 'inputbar { children: [prompt];}' -p "$MAIN is live! :( ")
+        if [[ "$CUSTOM" = "<b>Watch now</b>" ]]; then
+          _launcher
+        elif [[ "$CUSTOM" = "Choose quality (default = best)" ]]; then
+          _quality
+          _launcher
+        elif [[ "$CUSTOM" = "Back to Followed channels" ]]; then
+          z=$(( $z + 1))
+        else [ -z "$MAIN" ];
+          exit
+        fi
+      else
+        CUSTOM=$(echo "Back to Followed channels" | _rofi -theme-str 'inputbar { children: [prompt];}' -p "$MAIN is currently offline :( ")
+        if [[ "$CUSTOM" = "Back to Followed channels" ]]; then
+          z=$(( $z + 1))
+        else [ -z "$MAIN" ];
+          exit
+        fi
+      fi
+      done
   elif [ -z "$MAIN" ]; then
     exit
   else
@@ -142,7 +175,7 @@ Back to Followed Channels" | _rofi -theme-str 'inputbar { children: [prompt];}' 
       _quality
       _launcher
     elif [[ "$CHOICE" = "Back to Followed Channels" ]]; then
-      y=$(( $x + 1))
+      y=$(( $y + 1))
     else [ -z "$MAIN" ];
       exit
     fi
