@@ -22,11 +22,15 @@ Once you have done this, simply run the script again.
 
 Requirements include rofi, jq and streamlink. Optionally, you'll also need chatterino or chatty for the chat client and xdg-utils for the browser fuction.
 
+## To do
+
+Clean up the code a bit
+
+In the future I might try displaying the game and viewer number alongside the streams in separate columns. I looked into this a bit and I didn't find an obvious or easy way to achieve this.
+
 ## Additional info
 
 I am not a programmer. This code is probably ugly, and could probably be written in a more clean, concise way. I welcome suggestions and constructive criticism.
-
-In the future I might try displaying the game and viewer number alongside the streams in separate columns. I looked into this a bit and I didn't find an obvious or easy way to achieve this.
 
 i3 users (like me) can edit the launcher function to include some layout solution to further automatize the process. For example:
 ```
