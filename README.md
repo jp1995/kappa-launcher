@@ -18,7 +18,7 @@ Kappa Launcher is a simple bash script that uses rofi to display and launch your
 ### Install using ```make```
 ```bash
 # Clone the repo
-$ git clone https://github.com/jp1995/kappa-Launcher
+$ git clone https://github.com/jp1995/kappa-launcher
 
 # Change your current directory to kappa-launcher
 $ cd kappa-launcher
