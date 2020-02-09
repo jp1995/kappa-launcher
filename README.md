@@ -24,9 +24,9 @@ Requirements include rofi, jq and streamlink. Optionally, you'll also need chatt
 
 ## To do
 
-Clean up the code a bit
-
 In the future I might try displaying the game and viewer number alongside the streams in separate columns. I looked into this a bit and I didn't find an obvious or easy way to achieve this.
+
+Using streamlink to get the possible quality values is slow. Getting this from the twitch API would be a lot better.
 
 ## Additional info
 
