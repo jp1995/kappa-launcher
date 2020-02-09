@@ -68,14 +68,14 @@ _launcher () {
   else
     echo "ERROR: Player not defined in config file"
   fi
-  y=$(( $x + 1))
+  y=$(( $y + 1))
   x=$(( $x + 1))
-  z=$(( $z + 1))
 }
 
 _quality () {
   RESOLUTION=$(streamlink twitch.tv/$MAIN | grep -i  audio_only | cut -c 19- | tr , '\n' | tac | cut -d ' ' -f 2)
-  QUALITY=$(echo "$RESOLUTION" | _rofi -theme-str 'inputbar { children: [prompt];}' -no-custom -p "Select stream quality")
+  QUALITY=$(echo "$RESOLUTION" | _rofi -theme-str 'inputbar { children: [prompt];}' \
+  -no-custom -p "Select stream quality")
   if [ -z "$QUALITY" ]; then
     exit
   fi
@@ -84,6 +84,19 @@ _quality () {
 _customdata () {
   curl -s -o $MAIN_PATH/customdata.json -H "Client-ID: 3lyhpjkzellmam3843w7eq3es84375" \
   -X GET "https://api.twitch.tv/helix/streams?user_login=$MAIN"
+}
+
+_choice () {
+  if [[ "$CHOICE" = "<b>Watch now</b>" ]]; then
+    _launcher
+  elif [[ "$CHOICE" = "Choose quality (default = best)" ]]; then
+    _quality
+    _launcher
+  elif [[ "$CHOICE" = "Back to Followed channels" ]]; then
+    y=$(( $y + 1))
+  else [ -z "$MAIN" ];
+    exit
+  fi
 }
 
 # Setting working directory, checking for configuration file, generating it if needed
@@ -111,7 +124,8 @@ curl -s -o $MAIN_PATH/followdata.json -H "Accept: application/vnd.twitchtv.v5+js
 
 # Checking if json file is properly populated
 if grep -q "invalid oauth token" "$MAIN_PATH/followdata.json"; then
-  echo "ERROR: json file not populated, make sure you only copied your OAuth string, and not the preceeding 'oauth:' section"
+  echo "ERROR: json file not populated, make sure you only copied your OAuth string, and not the \
+  preceeding 'oauth:' section"
   exit
 else
   echo "json file successfully populated"
@@ -125,34 +139,31 @@ while [[ $x -le 1 ]]; do
   STREAMS=$(jq -r '.streams[].channel.display_name' $MAIN_PATH/followdata.json)
 
   # Listing said streams with rofi
-  MAIN=$(echo "$STREAMS" | _rofi -theme-str 'inputbar { children: [prompt,entry];}' -p "Followed channels: ")
+  MAIN=$(echo "$STREAMS" | _rofi -theme-str 'inputbar { children: [prompt,entry];}' \
+  -p "Followed channels: ")
+
   if [[ "$STREAMS" != *"$MAIN"* ]]; then
-    z=1
-    while [[ $z -le 1 ]]; do
+    while [[ $y -le 1 ]]; do
       _customdata
       if grep -q "user_name" "$MAIN_PATH/customdata.json" ; then
+
         CHOICE=$(echo "<b>Watch now</b>
 Choose quality (default = best)
-Back to Followed channels" | _rofi -theme-str 'inputbar { children: [prompt];}' -p "$MAIN is live! :( ")
-        if [[ "$CHOICE" = "<b>Watch now</b>" ]]; then
-          _launcher
-        elif [[ "$CHOICE" = "Choose quality (default = best)" ]]; then
-          _quality
-          _launcher
-        elif [[ "$CHOICE" = "Back to Followed channels" ]]; then
-          z=$(( $z + 1))
-        else [ -z "$MAIN" ];
-          exit
-        fi
+Back to Followed channels" | _rofi -theme-str 'inputbar { children: [prompt];}' \
+-p "$MAIN is live! ")
+
+        _choice
       else
-        CHOICE=$(echo "Back to Followed channels" | _rofi -theme-str 'inputbar { children: [prompt];}' -p "$MAIN is currently offline :( ")
+        CHOICE=$(echo "Back to Followed channels" | _rofi -theme-str \
+        'inputbar { children: [prompt];}' -p "$MAIN is currently offline :( ")
+
         if [[ "$CHOICE" = "Back to Followed channels" ]]; then
-          z=$(( $z + 1))
+          y=$(( $y + 1))
         else [ -z "$MAIN" ];
           exit
         fi
       fi
-      done
+    done
   elif [ -z "$MAIN" ]; then
     exit
   else
@@ -167,18 +178,10 @@ Back to Followed channels" | _rofi -theme-str 'inputbar { children: [prompt];}' 
 
 <b>Watch now</b>
 Choose quality (default = best)
-Back to Followed Channels" | _rofi -theme-str 'inputbar { children: [prompt];}' -selected-row 2 -no-custom -markup-rows -p "$MAIN is streaming $CURRENT_GAME to $VIEWERS viewers")
+Back to Followed channels" | _rofi -theme-str 'inputbar { children: [prompt];}' \
+-selected-row 2 -no-custom -markup-rows -p "$MAIN is streaming $CURRENT_GAME to $VIEWERS viewers")
 
-    if [[ "$CHOICE" = "<b>Watch now</b>" ]]; then
-      _launcher
-    elif [[ "$CHOICE" = "Choose quality (default = best)" ]]; then
-      _quality
-      _launcher
-    elif [[ "$CHOICE" = "Back to Followed Channels" ]]; then
-      y=$(( $y + 1))
-    else [ -z "$MAIN" ];
-      exit
-    fi
+    _choice
   done
   fi
 done
