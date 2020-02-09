@@ -131,22 +131,22 @@ while [[ $x -le 1 ]]; do
     while [[ $z -le 1 ]]; do
       _customdata
       if grep -q "user_name" "$MAIN_PATH/customdata.json" ; then
-        CUSTOM=$(echo "<b>Watch now</b>
+        CHOICE=$(echo "<b>Watch now</b>
 Choose quality (default = best)
 Back to Followed channels" | _rofi -theme-str 'inputbar { children: [prompt];}' -p "$MAIN is live! :( ")
-        if [[ "$CUSTOM" = "<b>Watch now</b>" ]]; then
+        if [[ "$CHOICE" = "<b>Watch now</b>" ]]; then
           _launcher
-        elif [[ "$CUSTOM" = "Choose quality (default = best)" ]]; then
+        elif [[ "$CHOICE" = "Choose quality (default = best)" ]]; then
           _quality
           _launcher
-        elif [[ "$CUSTOM" = "Back to Followed channels" ]]; then
+        elif [[ "$CHOICE" = "Back to Followed channels" ]]; then
           z=$(( $z + 1))
         else [ -z "$MAIN" ];
           exit
         fi
       else
-        CUSTOM=$(echo "Back to Followed channels" | _rofi -theme-str 'inputbar { children: [prompt];}' -p "$MAIN is currently offline :( ")
-        if [[ "$CUSTOM" = "Back to Followed channels" ]]; then
+        CHOICE=$(echo "Back to Followed channels" | _rofi -theme-str 'inputbar { children: [prompt];}' -p "$MAIN is currently offline :( ")
+        if [[ "$CHOICE" = "Back to Followed channels" ]]; then
           z=$(( $z + 1))
         else [ -z "$MAIN" ];
           exit
