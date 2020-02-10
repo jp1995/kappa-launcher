@@ -28,8 +28,10 @@ $ sudo make install
 ```
 
 ### AUR package
-to do
-
+For Arch based distros, an [AUR package](https://aur.archlinux.org/packages/kappa-launcher-git/) is available at
+```bash
+yay -S kappa-launcher-git
+```
 ## Instructions
 
 On first launch the script creates a configuration file in .config/kpl. You must then edit this file with your [Twitch OAuth token](https://twitchapps.com/tmi/). If you wish, you can also change the PLAYER and CHAT options here.
