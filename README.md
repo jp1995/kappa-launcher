@@ -33,7 +33,7 @@ For Arch based distros, an [AUR package](https://aur.archlinux.org/packages/kapp
 yay -S kappa-launcher-git
 ```
 
-### If you wanna fuck around with the script
+#### If you wanna fuck around with the script
 ```bash
 # Download the script, save it as kpl and make it executable
 $ curl -L https://raw.githubusercontent.com/jp1995/kappa-launcher/master/kpl > kpl && chmod +x kpl
