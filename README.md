@@ -40,6 +40,7 @@ $ curl -L https://raw.githubusercontent.com/jp1995/kappa-launcher/master/kpl > k
 ```
 
 ## Instructions
+The binary is named ```spt```
 
 On first launch the script creates a configuration file in .config/kpl. You must then edit this file with your [Twitch OAuth token](https://twitchapps.com/tmi/). If you wish, you can also change the PLAYER and CHAT options here.
 
