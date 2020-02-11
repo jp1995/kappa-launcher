@@ -49,7 +49,8 @@ Once you have done this, simply run the script again.
 Requirements:
 * rofi
 * jq
-* streamlink.
+* streamlink
+
 Optionally, you'll also need chatterino or chatty for the chat client and xdg-utils for the browser function.
 
 ## To do
