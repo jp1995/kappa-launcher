@@ -53,11 +53,11 @@ Requirements:
 
 Optionally, you'll also need chatterino or chatty for the chat client and xdg-utils for the browser function.
 
-## To do
+## Problems / to do
 
 In the future I might try displaying the game and viewer number alongside the streams in separate columns. I looked into this a bit and I didn't find an obvious or easy way to achieve this.
 
-Using streamlink to get the possible quality values is slow. Getting this from the twitch API would be a lot better.
+Using streamlink to get the possible quality values is slow. Getting this from the twitch API would be a lot better. However, as far as I know, this is currently not possible. So how does streamlink get the values? 
 
 ## Additional info
 
