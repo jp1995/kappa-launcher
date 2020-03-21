@@ -33,7 +33,7 @@ For Arch based distros, an [AUR package](https://aur.archlinux.org/packages/kapp
 yay -S kappa-launcher-git
 ```
 
-#### If you wanna fuck around with the script
+#### If you want to play around with the script
 ```bash
 # Download the script, save it as kpl and make it executable
 $ curl -L https://raw.githubusercontent.com/jp1995/kappa-launcher/master/kpl > kpl && chmod +x kpl
@@ -42,7 +42,7 @@ $ curl -L https://raw.githubusercontent.com/jp1995/kappa-launcher/master/kpl > k
 ## Instructions
 The binary is named ```kpl```
 
-On first launch the script creates a configuration file in .config/kpl. You must then edit this file with your [Twitch OAuth token](https://twitchapps.com/tmi/). If you wish, you can also change the PLAYER and CHAT options here.
+On first launch the script creates a configuration file in .config/kpl. You must then edit this file with your [Twitch OAuth token](https://twitchapps.com/tmi/). If you wish, you can also change the STREAM, CHAT and PLAYER options here.
 
 Once you have done this, simply run the script again.
 
@@ -57,11 +57,11 @@ Optionally, you'll also need chatterino or chatty for the chat client and xdg-ut
 
 In the future I might try displaying the game and viewer number alongside the streams in separate columns. I looked into this a bit and I didn't find an obvious or easy way to achieve this.
 
-Using streamlink to get the possible quality values is slow. Getting this from the twitch API would be a lot better. However, as far as I know, this is currently not possible. So how does streamlink get the values? 
+Using streamlink to get the possible quality values is slow. Getting this from the twitch API would be a lot better. However, as far as I know, this is currently not possible. So how does streamlink get the values?
 
 ## Additional info
 
-I am not a programmer. This code is probably ugly, and could probably be written in a more clean, concise way. I welcome suggestions and constructive criticism.
+I am not an actual programmer. This code is probably ugly, and could likely be written in a more clean, concise way. I welcome suggestions and constructive criticism.
 
 i3 users (like me) can edit the launcher function to include some layout solution to further automatize the process. For example:
 ```
