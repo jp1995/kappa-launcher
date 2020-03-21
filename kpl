@@ -22,11 +22,14 @@ fi
 _config () {
   mkdir -p $MAIN_PATH
   cat << EOF >$FILE
-# Either streamlink or browser, default streamlink
-PLAYER=streamlink
+# Either streamlink or browser, default streamlink.
+STREAM=streamlink
 
 # Either chatterino or chatty, default chatterino. Irrelevant when using browser.
 CHAT=chatterino
+
+# Video player used. Default VLC.
+PLAYER=vlc
 
 # OAuth
 OAUTH=replace_this_with_oauth_string
@@ -48,14 +51,15 @@ _filecheck () {
 }
 
 _rofi () {
-  rofi -dmenu -i -no-levenshtein-sort -disable-history -scroll-method 1 "$@"
+  rofi -dmenu -i -disable-history -scroll-method 1 "$@"
 }
 
 _launcher () {
-  if [[ "$PLAYER" = "streamlink" ]]; then
-    killall -9 vlc &    # This is required because VLC is annoying. If you use a different media player, remove this line.
-    streamlink twitch.tv/$MAIN $QUALITY &
-    echo "launching $PLAYER"
+  if [[ "$STREAM" = "streamlink" ]]; then
+    killall -9 "$PLAYER" "$CHAT" &
+    streamlink --hls-live-edge=1 --player="$PLAYER" twitch.tv/$MAIN $QUALITY &
+    echo "launching $STREAM"
+    sleep 1
     if [[ "$CHAT" = "chatterino" ]]; then
       chatterino &
     elif [[ "$CHAT" = "chatty" ]]; then
@@ -63,7 +67,7 @@ _launcher () {
     else
       echo "ERROR: Chat not defined in config file"
     fi
-  elif [[ "$PLAYER" = "browser" ]]; then
+  elif [[ "$STREAM" = "browser" ]]; then
     xdg-open https://twitch.tv/$MAIN
   else
     echo "ERROR: Player not defined in config file"
@@ -149,7 +153,7 @@ while [[ $x -le 1 ]]; do
 
         CHOICE=$(echo "<b>Watch now</b>
 Choose quality (default = best)
-Back to Followed channels" | _rofi -theme-str 'inputbar { children: [prompt];}' \
+Back to Followed channels" | _rofi -markup-rows -theme-str 'inputbar { children: [prompt];}' \
 -p "$MAIN is live! ")
 
         _choice
