@@ -45,7 +45,7 @@ _filecheck () {
     echo ""
     echo "Configuration file created in .config/kpl"
     echo ""
-    echo "Edit it with your OAuth key and relaunch the script"
+    echo "Edit it with your OAuth key (https://spheroid.xyz/kappa/) and relaunch the script"
     exit
   fi
 }
