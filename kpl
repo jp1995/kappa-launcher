@@ -33,6 +33,9 @@ PLAYER=vlc
 
 # OAuth
 OAUTH=replace_this_with_oauth_string
+
+# Multiple streams at once
+MULTIPLE=true
 EOF
 }
 
@@ -56,7 +59,9 @@ _rofi () {
 
 _launcher () {
   if [[ "$STREAM" = "streamlink" ]]; then
-    killall -9 "$PLAYER" "$CHAT" &
+    if [[ "$MULTIPLE" != "true" ]]; then
+      killall -9 "$PLAYER" "$CHAT" &
+    fi
     streamlink --hls-live-edge=1 --player="$PLAYER" twitch.tv/$MAIN $QUALITY &
     echo "launching $STREAM"
     sleep 1
@@ -85,6 +90,18 @@ _quality () {
   fi
 }
 
+_multiple () {
+  if [[ "$MULTIPLE" = true ]]; then
+  MULTIPLE="true"
+  elif [[ "$MULTIPLE" = "ask" ]]; then
+   if [[ -z $(pgrep streamlink) ]]; then
+     true
+   else
+    MULTIPLE=$( echo -e "true\nfalse" | _rofi -theme-str 'input { children: [prompt];}' -no-custom -p "Watch multiple streams at same time?")
+   fi
+  fi
+}
+
 _customdata () {
   curl -s -o $MAIN_PATH/customdata.json -H "Client-ID: 3lyhpjkzellmam3843w7eq3es84375" \
   -X GET "https://api.twitch.tv/helix/streams?user_login=$MAIN"
@@ -92,9 +109,11 @@ _customdata () {
 
 _choice () {
   if [[ "$CHOICE" = "<b>Watch now</b>" ]]; then
+    _multiple
     _launcher
   elif [[ "$CHOICE" = "Choose quality (default = best)" ]]; then
     _quality
+    _multiple
     _launcher
   elif [[ "$CHOICE" = "Back to Followed channels" ]]; then
     y=$(( $y + 1))
