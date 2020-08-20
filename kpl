@@ -92,10 +92,10 @@ _quality () {
 
 _multiple () {
   if [[ "$MULTIPLE" = true ]]; then
-  MULTIPLE="true"
+    MULTIPLE="true"
   elif [[ "$MULTIPLE" = "ask" ]]; then
    if [[ -z $(pgrep streamlink) ]]; then
-     true
+    MULTIPLE="true"
    else
     MULTIPLE=$( echo -e "true\nfalse" | _rofi -theme-str 'input { children: [prompt];}' -no-custom -p "Watch multiple streams at same time?")
    fi
