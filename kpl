@@ -68,7 +68,7 @@ _launcher () {
     if [[ "$CHAT" = "chatterino" ]]; then
       chatterino &
     elif [[ "$CHAT" = "chatty" ]]; then
-      chatty
+      chatty -channel $MAIN -connect
     else
       echo "ERROR: Chat not defined in config file"
     fi
