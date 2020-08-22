@@ -34,7 +34,7 @@ PLAYER=vlc
 # OAuth
 OAUTH=replace_this_with_oauth_string
 
-# Multiple streams at once
+# Leaves current stream running when a new one is launched. Variables: true, false, ask.
 MULTIPLE=true
 EOF
 }
