@@ -2,7 +2,7 @@
 Kappa Launcher
 ============
 
-Kappa Launcher is a simple bash script that uses rofi to display and launch your followed Twitch streams
+Kappa Launcher is a simple bash script that uses rofi to display and launch your followed Twitch streams.
 
 ![output](https://cdn.discordapp.com/attachments/534004815160934410/674739062338355227/klm-optimized.gif)
 
@@ -10,9 +10,9 @@ Kappa Launcher is a simple bash script that uses rofi to display and launch your
 
 * Displays all live Twitch streams that you follow.
 * Shows information about these streams, such as the currently played game, number of viewers and title.
-* Launches said streams, with the option of selecting video quality
+* Launches said streams, with the option of selecting video quality.
 * Supports streamlink, chatterino, chatty or just plain twitch in a browser.
-* Streams that you don't follow can also be launched
+* Streams that you don't follow can also be looked up and launched.
 
 ## Installation
 ### Install using ```make```
@@ -40,7 +40,7 @@ $ curl -L https://raw.githubusercontent.com/jp1995/kappa-launcher/master/kpl > k
 ```
 
 ## Instructions
-The binary is named ```kpl```
+The binary (executable) is named ```kpl```.
 
 On first launch the script creates a configuration file in .config/kpl. You must then edit this file with your [Twitch OAuth token](https://spheroid.xyz/kappa/). If you wish, you can also change the STREAM, CHAT and PLAYER options here.
 
@@ -57,7 +57,7 @@ Optionally, you'll also need chatterino or chatty for the chat client and xdg-ut
 
 In the future I might try displaying the game and viewer number alongside the streams in separate columns. I looked into this a bit and I didn't find an obvious or easy way to achieve this.
 
-Using streamlink to get the possible quality values is slow. Getting this from the twitch API would be a lot better. However, as far as I know, this is currently not possible. So how does streamlink get the values?
+Using streamlink to get the possible quality values is slow. Getting this from the twitch API would be a lot better. However, this is currently not possible.
 
 ## Additional info
 
