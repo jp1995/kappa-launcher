@@ -134,6 +134,13 @@ else
   _filecheck
 fi
 
+# Checking if streamlink has default-stream set to handle quality questions
+if [ -z "$XDG_CONFIG_HOME" ]; then
+  SL_FILE=~/.config/streamlink/config
+else
+  SL_FILE=$XDG_CONFIG_HOME/streamlink/config
+fi
+
 # Grab configuration file
 source $MAIN_PATH/config
 
@@ -162,7 +169,11 @@ fi
 x=1
 while [[ $x -le 1 ]]; do
   y=1
-  QUALITY=best
+  if [[ -f "$SL_FILE" ]] && [[ $(grep -c ^default-stream $SL_FILE) -eq 1 ]]; then
+    QUALITY=""
+  else
+    QUALITY=best
+  fi
   STREAMS=$(jq -r '.streams[].channel.display_name' $MAIN_PATH/followdata.json)
 
   # Listing said streams with rofi
