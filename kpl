@@ -134,7 +134,7 @@ else
   _filecheck
 fi
 
-# Checking if streamlink has default-stream set to handle quality questions
+# Checking for a streamlink config file
 if [ -z "$XDG_CONFIG_HOME" ]; then
   SL_FILE=~/.config/streamlink/config
 else
@@ -145,7 +145,7 @@ fi
 source $MAIN_PATH/config
 
 # Setting OAuth key, connecting to Twitch API and retrieving followed data
-# This is a slightly edited version of https://github.com/begs/livestreamers/blob/master/live.py
+# This is a modified version of https://github.com/begs/livestreamers/blob/master/live.py
 
 curl -s -o $MAIN_PATH/followdata.json -H "Accept: application/vnd.twitchtv.v5+json" \
 -H "Client-ID: 3lyhpjkzellmam3843w7eq3es84375" \
@@ -158,8 +158,7 @@ curl -s -H "Accept: application/vnd.twitchtv.v5+json" \
 
 # Checking if json file is properly populated
 if grep -q "invalid oauth token" "$MAIN_PATH/followdata.json"; then
-  echo "ERROR: json file not populated, make sure you only copied your OAuth string, and not the \
-  preceeding 'oauth:' section"
+  echo "ERROR: json file not populated, make sure you copied your OAuth token correctly"
   exit
 else
   echo "json file successfully populated"
@@ -169,6 +168,8 @@ fi
 x=1
 while [[ $x -le 1 ]]; do
   y=1
+
+  # Checking for quality value in streamlink configuration file
   if [[ -f "$SL_FILE" ]] && [[ $(grep -c ^default-stream $SL_FILE) -eq 1 ]]; then
     QUALITY=""
   else
@@ -176,7 +177,7 @@ while [[ $x -le 1 ]]; do
   fi
   STREAMS=$(jq -r '.streams[].channel.display_name' $MAIN_PATH/followdata.json)
 
-  # Listing said streams with rofi
+  # Listing streams with rofi
   MAIN=$(echo "$STREAMS" | _rofi -theme-str 'inputbar { children: [prompt,entry];}' \
   -p "Followed channels: ")
 
