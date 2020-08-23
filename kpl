@@ -143,7 +143,11 @@ source $MAIN_PATH/config
 curl -s -o $MAIN_PATH/followdata.json -H "Accept: application/vnd.twitchtv.v5+json" \
 -H "Client-ID: 3lyhpjkzellmam3843w7eq3es84375" \
 -H "Authorization: OAuth $OAUTH" \
--X GET "https://api.twitch.tv/kraken/streams/followed" \
+-X GET "https://api.twitch.tv/kraken/streams/followed?limit=100"
+curl -s -H "Accept: application/vnd.twitchtv.v5+json" \
+-H "Client-ID: 3lyhpjkzellmam3843w7eq3es84375" \
+-H "Authorization: OAuth $OAUTH" \
+-X GET "https://api.twitch.tv/kraken/streams/followed?limit=100&offset=100" >> $MAIN_PATH/followdata.json
 
 # Checking if json file is properly populated
 if grep -q "invalid oauth token" "$MAIN_PATH/followdata.json"; then
