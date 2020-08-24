@@ -175,11 +175,13 @@ while [[ $x -le 1 ]]; do
   else
     QUALITY=best
   fi
-  STREAMS=$(jq -r '.streams[].channel.display_name' $MAIN_PATH/followdata.json)
+  # Output name^^game^^viewers (as string) from jq to be formated by column
+  STREAMS=$(jq -r '.streams[] | .channel.display_name + "^^" + .game + "^^" + (.viewers|tostring)' $MAIN_PATH/followdata.json | column -t -s "^^")
 
   # Listing streams with rofi
+  # display 3 columns, but cut only name as MAIN variable
   MAIN=$(echo "$STREAMS" | _rofi -theme-str 'inputbar { children: [prompt,entry];}' \
-  -p "Followed channels: ")
+  -p "Followed channels: " | cut -d ' ' -f 1)
 
   if [[ "$STREAMS" != *"$MAIN"* ]]; then
     while [[ $y -le 1 ]]; do
