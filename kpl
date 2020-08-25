@@ -104,7 +104,7 @@ _multiple () {
 
 _customdata () {
   curl -s -o $MAIN_PATH/customdata.json -H "Client-ID: 3lyhpjkzellmam3843w7eq3es84375" \
-  -X GET "https://api.twitch.tv/helix/streams?user_login=$MAIN"
+  -H "Authorization: Bearer $OAUTH" -X GET "https://api.twitch.tv/helix/streams?user_login=$MAIN"
 }
 
 _choice () {
