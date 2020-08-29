@@ -134,8 +134,8 @@ _choice () {
 
 _monospaced () {
   # Check if font is in list of monospaced fonts
-  MONOFONTS=$(fc-list :mono | awk -F : '{print $2}' | sort -u)
-  export MONO=$(echo "$MONOFONTS" | grep -ic "$*")
+  MONOFONTS=$(fc-list :mono | sed 's/:\ /:/' | awk -F : -v quote="'" '{print quote $2 quote}' | sort -u)
+  export MONO=$(echo "$MONOFONTS" | grep -ic "'$*'")
 }
 
 _fontname () {
