@@ -36,6 +36,16 @@ OAUTH=replace_this_with_oauth_string
 
 # Leaves current stream running when a new one is launched. Variables: true, false, ask.
 MULTIPLE=true
+
+# Legacy (streamer name only) or expanded view (streamer name, game and viewer count)
+# Variables legacy, expanded
+# Note: The expanded view will change font to monospaced to line up columns. 
+VIEW=legacy
+
+# When expanded view is used the font should be monospaced so columns lineup.
+# Either we discover font and font size or you can set a font and size below.
+# This is the same format as rofi uses.
+FONT="mono 12"
 EOF
 }
 
@@ -122,6 +132,68 @@ _choice () {
   fi
 }
 
+_monospaced () {
+  # Check if font is in list of monospaced fonts
+  MONOFONTS=$(fc-list :mono | sed 's/:\ /:/' | awk -F : -v quote="'" '{print quote $2 quote}' | sort -u)
+  export MONO=$(echo "$MONOFONTS" | grep -ic "'$*'")
+}
+
+_fontname () {
+  # If FONT set in kpl config, test if its monospaced before using
+  if [[ ! -z $FONT ]]; then
+    FNAME=$(echo $FONT | awk -F " " '{$NF=""; print $0}' | sed 's/\ $//')
+    _monospaced "$FNAME"
+    if [[ $MONO -eq 1 ]]; then
+      export FNAME="$FNAME"
+      return
+    else
+      FONT=""
+    fi
+  fi
+  # If FONT set in rofi config, test if its monospaced before using
+  FNAME=$(grep -e "^[[:space:]].*font:" $R_FILE | cut -d \" -f 2 | awk '{$NF=""; print $0}' | sed 's/\ $//')
+  if [[ ! -z $FNAME ]]; then
+  _monospaced "$FNAME"
+    if [[ $MONO -eq 1 ]]; then
+      export FNAME="$FNAME"
+      return
+    fi
+  fi
+  # If FONT set in xresources, test if its monospaced before using or
+  # default to mono (family class which fontconfig will pick from monospaced fonts)
+  FNAME=$(rofi -dump-xresources | grep font | cut -d: -f 2 | sed 's/^\ *//g' | awk '{$NF=""; print $0}' | sed 's/\ $//')
+  if [[ $FNAME != "mono" ]]; then
+   _monospaced "$FNAME"
+  fi
+  if [[ $MONO -eq 1 ]]; then
+     export FNAME="$FNAME"
+     return
+   else
+     FNAME="mono"
+  fi
+}
+
+_fontsize (){
+  # If font set from kpl config
+  if [[ ! -z $FONT ]]; then
+    export FSIZE=$(echo $FONT | awk '{print $NF}')
+    return
+  fi
+  # If font is set in rofi config
+  FSIZE=$(grep -e "^[[:space:]].*font:" $R_FILE | cut -d \" -f 2 | awk '{print $NF}')
+  if [[ ! -z $FSIZE ]]; then
+    export FSIZE
+    return
+  fi
+  # If font is set from xresources else use default of 12
+  FSIZE=$(rofi -dump-xresources | grep font | cut -d: -f 2  | sed 's/^\ *//' | awk '{print $NF}')
+  if [[ ! -z $FSIZE ]]; then
+    export FSIZE
+  else
+    export FSIZE=12
+  fi
+}
+
 # Setting working directory, checking for configuration file, generating it if needed
 
 if [ -z "$XDG_CONFIG_HOME" ]; then
@@ -132,6 +204,13 @@ else
   FILE=$XDG_CONFIG_HOME/kpl/config
   MAIN_PATH=$XDG_CONFIG_HOME/kpl
   _filecheck
+fi
+
+# Set rofi config file
+if [ -z "$XDG_CONFIG_HOME" ]; then
+  R_FILE=~/.config/rofi/config
+else
+  R_FILE=$XDG_CONFIG_HOME/kpl/config
 fi
 
 # Checking for a streamlink config file
@@ -175,11 +254,29 @@ while [[ $x -le 1 ]]; do
   else
     QUALITY=best
   fi
-  STREAMS=$(jq -r '.streams[].channel.display_name' $MAIN_PATH/followdata.json)
+  # Expanded view output name^^game^^viewers (as string) from jq to be 
+  # formatted by column or only name if legacy or not specified
+  if [[ $VIEW = "expanded" ]]; then
+    STREAMS=$(jq -r '.streams[] | .channel.display_name + "^^" + .game + "^^" + (.viewers|tostring)' $MAIN_PATH/followdata.json | column -t -s "^^")
+  else
+    STREAMS=$(jq -r '.streams[].channel.display_name' $MAIN_PATH/followdata.json)
+  fi
 
   # Listing streams with rofi
-  MAIN=$(echo "$STREAMS" | _rofi -theme-str 'inputbar { children: [prompt,entry];}' \
-  -p "Followed channels: ")
+  # display 3 columns, but cut only name as MAIN variable
+  if [[ $VIEW = "expanded" ]]; then
+    # Get or discover the font to be used for expanded view
+    _fontname
+    _fontsize
+    # Calculate the max width of the streams in characters add 2 for margin and scrollbar
+    # -$WIDTH means width in characters rather than % of screen or pixels.
+    WIDTH=$(jq -r '.streams[] | .channel.display_name + "^^" + .game + "^^" + (.viewers|tostring)' $MAIN_PATH/followdata.json | column -t -s "^^" | while read line; do echo -n "$line" | wc -m ; done |  sort -n -u | tail -1)
+    MAIN=$(echo "$STREAMS" | _rofi -font "$FNAME $FSIZE" -width -$(($WIDTH + 2)) -theme-str 'inputbar { children: [prompt,entry];}' \
+    -p "Followed channels: " | cut -d ' ' -f 1)
+  else
+    MAIN=$(echo "$STREAMS" | _rofi -theme-str 'inputbar { children: [prompt,entry];}' \
+    -p "Followed channels: ")
+  fi
 
   if [[ "$STREAMS" != *"$MAIN"* ]]; then
     while [[ $y -le 1 ]]; do
