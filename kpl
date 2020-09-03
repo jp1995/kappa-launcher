@@ -92,7 +92,7 @@ _launcher () {
 }
 
 _quality () {
-  RESOLUTION=$(streamlink twitch.tv/$MAIN --player=none | grep -i  audio_only | cut -c 19- | tr , '\n' | tac | cut -d ' ' -f 2)
+  RESOLUTION=$(streamlink twitch.tv/$MAIN --loglevel=info --player=none | grep -i  audio_only | cut -d : -f 2 | tr , '\n' | tac | cut -d ' ' -f 2)
   QUALITY=$(echo "$RESOLUTION" | _rofi -theme-str 'inputbar { children: [prompt];}' \
   -no-custom -p "Select stream quality")
   if [ -z "$QUALITY" ]; then
