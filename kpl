@@ -46,6 +46,9 @@ VIEW=legacy
 # Either we discover font and font size or you can set a font and size below.
 # This is the same format as rofi uses.
 FONT="mono 12"
+
+# Extra arguments passed to streamlink
+STREAMLINK_ARGS=""
 EOF
 }
 
@@ -72,7 +75,7 @@ _launcher () {
     if [[ "$MULTIPLE" != "true" ]]; then
       killall -9 "$PLAYER" "$CHAT" &
     fi
-    streamlink --hls-live-edge=1 --player="$PLAYER" twitch.tv/$MAIN $QUALITY &
+    streamlink $STREAMLINK_ARGS --player="$PLAYER" twitch.tv/$MAIN $QUALITY &
     echo "launching $STREAM"
     sleep 1
     if [[ "$CHAT" = "chatterino" ]]; then
