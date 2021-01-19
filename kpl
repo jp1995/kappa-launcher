@@ -198,7 +198,6 @@ _fontsize (){
 }
 
 # Setting working directory, checking for configuration file, generating it if needed
-
 if [ -z "$XDG_CONFIG_HOME" ]; then
   FILE=~/.config/kpl/config
   MAIN_PATH=~/.config/kpl
