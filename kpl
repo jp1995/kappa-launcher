@@ -225,7 +225,7 @@ fi
 # Grab configuration file
 source $MAIN_PATH/config
 
-# Setting OAuth key, connecting to Twitch API and retrieving followed data
+# Setting OAuth key, connecting to Twitch API and retrieving follow data
 # This is a modified version of https://github.com/begs/livestreamers/blob/master/live.py
 
 curl -s -o $MAIN_PATH/followdata.json -H "Accept: application/vnd.twitchtv.v5+json" \
