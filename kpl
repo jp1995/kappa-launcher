@@ -39,7 +39,7 @@ MULTIPLE=true
 
 # Legacy (streamer name only) or expanded view (streamer name, game and viewer count)
 # Variables legacy, expanded
-# Note: The expanded view will change font to monospaced to line up columns. 
+# Note: The expanded view will change font to monospaced to line up columns.
 VIEW=legacy
 
 # When expanded view is used the font should be monospaced so columns lineup.
@@ -256,12 +256,12 @@ while [[ $x -le 1 ]]; do
   else
     QUALITY=best
   fi
-  # Expanded view output name^^game^^viewers (as string) from jq to be 
+  # Expanded view output name^^game^^viewers (as string) from jq to be
   # formatted by column or only name if legacy or not specified
   if [[ $VIEW = "expanded" ]]; then
-    STREAMS=$(jq -r '.streams[] | .channel.display_name + "^^" + .game + "^^" + (.viewers|tostring)' $MAIN_PATH/followdata.json | column -t -s "^^")
+    STREAMS=$(jq -r '.streams[] | .channel.name + "^^" + .game + "^^" + (.viewers|tostring)' $MAIN_PATH/followdata.json | column -t -s "^^")
   else
-    STREAMS=$(jq -r '.streams[].channel.display_name' $MAIN_PATH/followdata.json)
+    STREAMS=$(jq -r '.streams[].channel.name' $MAIN_PATH/followdata.json)
   fi
 
   # Listing streams with rofi
@@ -272,7 +272,7 @@ while [[ $x -le 1 ]]; do
     _fontsize
     # Calculate the max width of the streams in characters add 2 for margin and scrollbar
     # -$WIDTH means width in characters rather than % of screen or pixels.
-    WIDTH=$(jq -r '.streams[] | .channel.display_name + "^^" + .game + "^^" + (.viewers|tostring)' $MAIN_PATH/followdata.json | column -t -s "^^" | while read line; do echo -n "$line" | wc -m ; done |  sort -n -u | tail -1)
+    WIDTH=$(jq -r '.streams[] | .channel.name + "^^" + .game + "^^" + (.viewers|tostring)' $MAIN_PATH/followdata.json | column -t -s "^^" | while read line; do echo -n "$line" | wc -m ; done |  sort -n -u | tail -1)
     MAIN=$(echo "$STREAMS" | _rofi -font "$FNAME $FSIZE" -width -$(($WIDTH + 2)) -theme-str 'inputbar { children: [prompt,entry];}' \
     -p "Followed channels: " | cut -d ' ' -f 1)
   else
@@ -306,9 +306,9 @@ Back to Followed channels" | _rofi -markup-rows -theme-str 'inputbar { children:
     exit
   else
     # Retrieving additional information
-    CURRENT_GAME=$(jq -r ".streams[].channel | select(.display_name==\"$MAIN\") | .game"  $MAIN_PATH/followdata.json)
-    STATUS=$(jq -r ".streams[].channel | select(.display_name==\"$MAIN\") | .status"  $MAIN_PATH/followdata.json)
-    VIEWERS=$(jq -r ".streams[] | select(.channel.display_name==\"$MAIN\") | .viewers"  $MAIN_PATH/followdata.json)
+    CURRENT_GAME=$(jq -r ".streams[].channel | select(.name==\"$MAIN\") | .game"  $MAIN_PATH/followdata.json)
+    STATUS=$(jq -r ".streams[].channel | select(.name==\"$MAIN\") | .status"  $MAIN_PATH/followdata.json)
+    VIEWERS=$(jq -r ".streams[] | select(.channel.name==\"$MAIN\") | .viewers"  $MAIN_PATH/followdata.json)
 
     # Prompting with stream info and options
     while [[ $y -le 1 ]]; do
