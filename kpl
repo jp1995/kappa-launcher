@@ -43,7 +43,7 @@ OAUTH=replace_this_with_oauth_string
 MULTIPLE=true
 
 # Immediately launch stream from the main menu, without the option to change quality.
-QUICK=false
+QUICK=true
 
 # Expanded (channel name, game and viewer count) or minimal view (channel name only).
 # Variables expanded, minimal.
@@ -63,8 +63,8 @@ FONT="mono 12"
 STREAMLINK_ARGS=""
 
 # For pointing to an alternative rofi configuration file.
-# No quotes, full path.
-ROFI_CONFIG=/home/johan/scripts/kpl/test.rasi
+# No quotes, full path. Default is none.
+ROFI_CONFIG=none
 EOF
 }
 
