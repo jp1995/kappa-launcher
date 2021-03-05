@@ -4,7 +4,7 @@ Kappa Launcher
 
 Kappa Launcher is a simple bash script that uses rofi to display and launch your followed Twitch streams.
 
-![output](https://cdn.discordapp.com/attachments/534004815160934410/674739062338355227/klm-optimized.gif)
+![output](https://cdn.discordapp.com/attachments/533998516876607511/817513029775392788/2021-03-05_20-55-07.gif)
 
 ## Features
 
