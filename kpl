@@ -3,6 +3,7 @@
 # Checking dependencies
 JQ_BIN="$(whereis -b jq | awk '{print $2}')"
 ROFI_BIN="$(whereis -b rofi | awk '{print $2}')"
+CURL_BIN="$(whereis -b curl | awk '{print $2}')"
 STREAMLINK_BIN="$(whereis -b streamlink |awk '{print $2}')"
 
 if [ -z "$JQ_BIN" ]; then
@@ -11,6 +12,10 @@ if [ -z "$JQ_BIN" ]; then
 fi
 if [ -z "$ROFI_BIN" ]; then
   echo "ERROR: Kappa Launcher dependency not found: rofi"
+  exit 1
+fi
+if [ -z "$CURL_BIN" ]; then
+  echo "ERROR: Kappa Launcher dependency not found: curl"
   exit 1
 fi
 if [ -z "$STREAMLINK_BIN" ]; then
@@ -22,39 +27,53 @@ fi
 _config () {
   mkdir -p $MAIN_PATH
   cat << EOF >$FILE
-# Either streamlink or browser, default streamlink.
+# Streamlink or browser, default streamlink.
 STREAM=streamlink
 
-# Either chatterino or chatty, default chatterino. Irrelevant when using browser.
+# Chatterino or chatty, default chatterino. Irrelevant when using browser.
 CHAT=chatterino
 
-# Video player used. Default VLC.
+# Video player used. Default VLC. Please use something else though.
 PLAYER=vlc
 
-# OAuth
+# OAuth token.
 OAUTH=replace_this_with_oauth_string
 
 # Leaves current stream running when a new one is launched. Variables: true, false, ask.
 MULTIPLE=true
 
-# Legacy (streamer name only) or expanded view (streamer name, game and viewer count)
-# Variables legacy, expanded
+# Immediately launch stream from the main menu, without the option to change quality.
+QUICK=false
+
+# Expanded (channel name, game and viewer count) or minimal view (channel name only).
+# Variables expanded, minimal.
 # Note: The expanded view will change font to monospaced to line up columns.
-VIEW=legacy
+VIEW=expanded
+
+# Maximum height of the rofi window in lines. Used in the expanded mode where height is dynamic.
+MAX_HEIGHT=30
 
 # When expanded view is used the font should be monospaced so columns lineup.
 # Either we discover font and font size or you can set a font and size below.
 # This is the same format as rofi uses.
 FONT="mono 12"
 
-# Extra arguments passed to streamlink
+# Extra arguments passed to streamlink. Use space as separator as shown below.
+# Example: ="--twitch-disable-hosting --twitch-disable-ads --twitch-low-latency --hls-live-edge=1"
 STREAMLINK_ARGS=""
+
+# For pointing to an alternative rofi configuration file.
+# No quotes, full path.
+ROFI_CONFIG=/home/johan/scripts/kpl/test.rasi
 EOF
 }
 
 _filecheck () {
   if [ -f "$FILE" ]; then
     echo "Configuration file found, proceeding"
+    if [ "$(wc -l "$FILE" | awk '{print $1}')" -lt 38 ]; then
+      echo "Your configuration file appears to be out of date. Please delete it and let the script recreate the file"
+    fi
   else
     echo "First start detected, generating configuration file"
     _config
@@ -67,7 +86,7 @@ _filecheck () {
 }
 
 _rofi () {
-  rofi -dmenu -i -disable-history -scroll-method 1 "$@"
+  rofi -dmenu -i -disable-history -config "$ROFI_CONFIG" -hide-scrollbar true -scroll-method 1 "$@"
 }
 
 _launcher () {
@@ -90,8 +109,7 @@ _launcher () {
   else
     echo "ERROR: Player not defined in config file"
   fi
-  y=$(( $y + 1))
-  x=$(( $x + 1))
+  exit
 }
 
 _quality () {
@@ -129,7 +147,8 @@ _choice () {
     _multiple
     _launcher
   elif [[ "$CHOICE" = "Back to Followed channels" ]]; then
-    y=$(( $y + 1))
+    # break does not work when it's in a function that's in a while loop.
+    :
   else [ -z "$MAIN" ];
     exit
   fi
@@ -209,10 +228,14 @@ else
 fi
 
 # Set rofi config file
-if [ -z "$XDG_CONFIG_HOME" ]; then
-  R_FILE=~/.config/rofi/config
+if [[ "$ROFI_CONFIG" -eq "none" ]]; then
+  if [ -z "$XDG_CONFIG_HOME" ]; then
+    R_FILE=~/.config/rofi/config.rasi
+  else
+    R_FILE=$XDG_CONFIG_HOME/kpl/config.rasi
+  fi
 else
-  R_FILE=$XDG_CONFIG_HOME/kpl/config
+  R_FILE=$ROFI_CONFIG
 fi
 
 # Checking for a streamlink config file
@@ -246,10 +269,7 @@ else
 fi
 
 # Getting names of currently live streams
-x=1
-while [[ $x -le 1 ]]; do
-  y=1
-
+while true; do
   # Checking for quality value in streamlink configuration file
   if [[ -f "$SL_FILE" ]] && [[ $(grep -c ^default-stream $SL_FILE) -eq 1 ]]; then
     QUALITY=""
@@ -257,33 +277,40 @@ while [[ $x -le 1 ]]; do
     QUALITY=best
   fi
   # Expanded view output name^^game^^viewers (as string) from jq to be
-  # formatted by column or only name if legacy or not specified
+  # formatted by column or only name if minimal or not specified
   if [[ $VIEW = "expanded" ]]; then
-    STREAMS=$(jq -r '.streams[] | .channel.name + "^^" + .game + "^^" + (.viewers|tostring)' $MAIN_PATH/followdata.json | column -t -s "^^")
-  else
-    STREAMS=$(jq -r '.streams[].channel.name' $MAIN_PATH/followdata.json)
-  fi
-
-  # Listing streams with rofi
-  # display 3 columns, but cut only name as MAIN variable
-  if [[ $VIEW = "expanded" ]]; then
+    STREAMS=$(jq -r '.streams[] | "\(.channel.name)^^\(.game)^^\(.viewers)"' $MAIN_PATH/followdata.json | column -t -s "^^")
+    STATUS=$(jq -r '.streams[] | .channel.status' $MAIN_PATH/followdata.json)
     # Get or discover the font to be used for expanded view
     _fontname
     _fontsize
     # Calculate the max width of the streams in characters add 2 for margin and scrollbar
     # -$WIDTH means width in characters rather than % of screen or pixels.
-    WIDTH=$(jq -r '.streams[] | .channel.name + "^^" + .game + "^^" + (.viewers|tostring)' $MAIN_PATH/followdata.json | column -t -s "^^" | while read line; do echo -n "$line" | wc -m ; done |  sort -n -u | tail -1)
-    MAIN=$(echo "$STREAMS" | _rofi -font "$FNAME $FSIZE" -width -$(($WIDTH + 2)) -theme-str 'inputbar { children: [prompt,entry];}' \
+    WIDTH=$(jq -r '.streams[] | "\(.channel.name)^^\(.game)^^\(.viewers)"' $MAIN_PATH/followdata.json | column -t -s "^^" | while read line; do echo -n "$line" | wc -m ; done |  sort -n -u | tail -1)
+    HEIGHT=$(jq -r '.streams[] | .channel.name' /home/johan/.config/kpl/followdata.json | wc -l)
+    if [[ "$HEIGHT" -gt "$MAX_HEIGHT" ]]; then
+        HEIGHT=$MAX_HEIGHT
+    fi
+    MAIN=$(echo "$STREAMS" | _rofi -font "$FNAME $FSIZE" -width -$(($WIDTH + 3)) -lines $HEIGHT -theme-str 'entry { placeholder: ""; } inputbar { children: [prompt, entry];}' \
     -p "Followed channels: " | cut -d ' ' -f 1)
   else
-    MAIN=$(echo "$STREAMS" | _rofi -theme-str 'inputbar { children: [prompt,entry];}' \
+    STREAMS=$(jq -r '.streams[].channel.name' $MAIN_PATH/followdata.json)
+    MAIN=$(echo "$STREAMS" | _rofi -theme-str 'entry { placeholder: ""; } inputbar { children: [prompt, entry];}' \
     -p "Followed channels: ")
   fi
 
+  if [ -z "$MAIN" ]; then
+    exit
+  fi
+
   if [[ "$STREAMS" != *"$MAIN"* ]]; then
-    while [[ $y -le 1 ]]; do
+    while true; do
       _customdata
       if grep -q "user_name" "$MAIN_PATH/customdata.json" ; then
+        if [[ $QUICK = "true" ]]; then
+          _multiple
+          _launcher
+        fi
 
         CHOICE=$(echo "<b>Watch now</b>
 Choose quality (default = best)
@@ -291,12 +318,12 @@ Back to Followed channels" | _rofi -markup-rows -theme-str 'inputbar { children:
 -p "$MAIN is live! ")
 
         _choice
+        break
       else
         CHOICE=$(echo "Back to Followed channels" | _rofi -theme-str \
         'inputbar { children: [prompt];}' -p "$MAIN is currently offline :( ")
-
         if [[ "$CHOICE" = "Back to Followed channels" ]]; then
-          y=$(( $y + 1))
+          break
         else [ -z "$MAIN" ];
           exit
         fi
@@ -305,21 +332,26 @@ Back to Followed channels" | _rofi -markup-rows -theme-str 'inputbar { children:
   elif [ -z "$MAIN" ]; then
     exit
   else
+    if [[ $QUICK = "true" ]]; then
+      _multiple
+      _launcher
+    fi
     # Retrieving additional information
     CURRENT_GAME=$(jq -r ".streams[].channel | select(.name==\"$MAIN\") | .game"  $MAIN_PATH/followdata.json)
     STATUS=$(jq -r ".streams[].channel | select(.name==\"$MAIN\") | .status"  $MAIN_PATH/followdata.json)
     VIEWERS=$(jq -r ".streams[] | select(.channel.name==\"$MAIN\") | .viewers"  $MAIN_PATH/followdata.json)
 
     # Prompting with stream info and options
-    while [[ $y -le 1 ]]; do
+    while true; do
     CHOICE=$(echo "$STATUS
 
 <b>Watch now</b>
 Choose quality (default = best)
-Back to Followed channels" | _rofi -theme-str 'inputbar { children: [prompt];}' \
+Back to Followed channels" | sed 's/&/&amp;/g' | _rofi -theme-str 'inputbar { children: [prompt];}' \
 -selected-row 2 -no-custom -markup-rows -p "$MAIN is streaming $CURRENT_GAME to $VIEWERS viewers")
 
     _choice
+    break
   done
   fi
 done
