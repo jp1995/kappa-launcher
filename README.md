@@ -4,7 +4,7 @@ Kappa Launcher
 
 Kappa Launcher is a simple bash script that uses rofi to display and launch your followed Twitch streams.
 
-+<img src="https://spheroid.xyz/kappa/kpl.gif?raw=true" width="200px">
+![](https://github.com/jp1995/ctf_docs/blob/main/stuff/kpl.gif)
 
 ## Features
 
@@ -59,9 +59,9 @@ Using streamlink to get the possible quality values is slow. Getting this from t
 
 ## Additional info
 
-I am not an actual programmer. This code is probably ugly, and could likely be written in a more clean, concise way. I welcome suggestions and constructive criticism.
+I am not an actual programmer. This code could likely be written in a more clean, concise way. I welcome suggestions and constructive criticism.
 
-i3 users (like me) can edit the launcher function to include some layout solution to further automatize the process. For example:
+i3 users can edit the launcher function to include some layout solution to further automatize the process. For example:
 ```
 i3-msg "workspace number 3" &&
 exec layout_manager.sh TWITCH
