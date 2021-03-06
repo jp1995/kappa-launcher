@@ -34,5 +34,5 @@ FONT="mono 12"
 STREAMLINK_ARGS=""
 
 # For pointing to an alternative rofi configuration file.
-# No quotes, full path. Default is none.
-ROFI_CONFIG=none
+# No quotes, full path. Default is no value.
+ROFI_CONFIG=

@@ -26,30 +26,40 @@ fi
 # Some functions
 _config () {
   mkdir -p $MAIN_PATH
-  cp /etc/kpl/config $MAIN_PATH
+    if [ -f config ]; then
+        cp config $MAIN_PATH
+    else
+        cp /etc/kpl/config $MAIN_PATH
+    fi
 }
 
 _error () {
-    echo "Your configuration file appears to be out of date. Please delete it and let the script recreate the file"
+    echo "Configuration variable missing, attempting to fix this"
 }
 
 _updatecheck () {
     # Checking if the configuration file is out of date, setting some defaults.
     if [ -z "$MULTIPLE" ]; then
         _error
-        MULTIPLE="true"
+        echo -e "\n# Leaves current stream running when a new one is launched. Variables: true, false, ask.
+MULTIPLE=true" >> $MAIN_PATH/config
     fi
     if [ -z "$QUICK" ]; then
         _error
-        QUICK="true"
+        echo -e "\n# Immediately launch stream from the main menu, without the option to change quality.
+QUICK=true"  >> $MAIN_PATH/config
     fi
     if [ -z "$VIEW" ]; then
         _error
-        VIEW="expanded"
+        echo -e "\n# Expanded (channel name, game and viewer count) or minimal view (channel name only).
+# Variables expanded, minimal.
+# Note: The expanded view will change font to monospaced to line up columns.
+VIEW=expanded"  >> $MAIN_PATH/config
     fi
     if [ -z "$MAX_HEIGHT" ]; then
         _error
-        MAX_HEIGHT=30
+        echo -e "\n# Maximum height of the rofi window in lines. Used in the expanded mode where height is dynamic.
+MAX_HEIGHT=30"  >> $MAIN_PATH/config
     fi
 }
 
@@ -209,7 +219,7 @@ else
 fi
 
 # Set rofi config file
-if [[ "$ROFI_CONFIG" -eq "none" ]]; then
+if [ -z "$ROFI_CONFIG" ]; then
   if [ -z "$XDG_CONFIG_HOME" ]; then
     R_FILE=~/.config/rofi/config.rasi
   else
