@@ -1,0 +1,38 @@
+ # Streamlink or browser, default streamlink.
+STREAM=streamlink
+
+# Chatterino or chatty, default chatterino. Irrelevant when using browser.
+CHAT=chatterino
+
+# Video player used. Default VLC. Please use something else though.
+PLAYER=vlc
+
+# OAuth token.
+OAUTH=replace_this_with_oauth_string
+
+# Leaves current stream running when a new one is launched. Variables: true, false, ask.
+MULTIPLE=true
+
+# Immediately launch stream from the main menu, without the option to change quality.
+QUICK=true
+
+# Expanded (channel name, game and viewer count) or minimal view (channel name only).
+# Variables expanded, minimal.
+# Note: The expanded view will change font to monospaced to line up columns.
+VIEW=expanded
+
+# Maximum height of the rofi window in lines. Used in the expanded mode where height is dynamic.
+MAX_HEIGHT=30
+
+# When expanded view is used the font should be monospaced so columns lineup.
+# Either we discover font and font size or you can set a font and size below.
+# This is the same format as rofi uses.
+FONT="mono 12"
+
+# Extra arguments passed to streamlink. Use space as separator as shown below.
+# Example: ="--twitch-disable-hosting --twitch-disable-ads --twitch-low-latency --hls-live-edge=1"
+STREAMLINK_ARGS=""
+
+# For pointing to an alternative rofi configuration file.
+# No quotes, full path. Default is none.
+ROFI_CONFIG=none

@@ -26,60 +26,42 @@ fi
 # Some functions
 _config () {
   mkdir -p $MAIN_PATH
-  cat << EOF >$FILE
-# Streamlink or browser, default streamlink.
-STREAM=streamlink
+  cp /etc/kpl/config $MAIN_PATH
+}
 
-# Chatterino or chatty, default chatterino. Irrelevant when using browser.
-CHAT=chatterino
+_error () {
+    echo "Your configuration file appears to be out of date. Please delete it and let the script recreate the file"
+}
 
-# Video player used. Default VLC. Please use something else though.
-PLAYER=vlc
-
-# OAuth token.
-OAUTH=replace_this_with_oauth_string
-
-# Leaves current stream running when a new one is launched. Variables: true, false, ask.
-MULTIPLE=true
-
-# Immediately launch stream from the main menu, without the option to change quality.
-QUICK=true
-
-# Expanded (channel name, game and viewer count) or minimal view (channel name only).
-# Variables expanded, minimal.
-# Note: The expanded view will change font to monospaced to line up columns.
-VIEW=expanded
-
-# Maximum height of the rofi window in lines. Used in the expanded mode where height is dynamic.
-MAX_HEIGHT=30
-
-# When expanded view is used the font should be monospaced so columns lineup.
-# Either we discover font and font size or you can set a font and size below.
-# This is the same format as rofi uses.
-FONT="mono 12"
-
-# Extra arguments passed to streamlink. Use space as separator as shown below.
-# Example: ="--twitch-disable-hosting --twitch-disable-ads --twitch-low-latency --hls-live-edge=1"
-STREAMLINK_ARGS=""
-
-# For pointing to an alternative rofi configuration file.
-# No quotes, full path. Default is none.
-ROFI_CONFIG=none
-EOF
+_updatecheck () {
+    # Checking if the configuration file is out of date, setting some defaults.
+    if [ -z "$MULTIPLE" ]; then
+        _error
+        MULTIPLE="true"
+    fi
+    if [ -z "$QUICK" ]; then
+        _error
+        QUICK="true"
+    fi
+    if [ -z "$VIEW" ]; then
+        _error
+        VIEW="expanded"
+    fi
+    if [ -z "$MAX_HEIGHT" ]; then
+        _error
+        MAX_HEIGHT=30
+    fi
 }
 
 _filecheck () {
   if [ -f "$FILE" ]; then
     echo "Configuration file found, proceeding"
-    if [ "$(wc -l "$FILE" | awk '{print $1}')" -lt 38 ]; then
-      echo "Your configuration file appears to be out of date. Please delete it and let the script recreate the file"
-    fi
+    source $MAIN_PATH/config
+    _updatecheck
   else
-    echo "First start detected, generating configuration file"
+    echo -e "First start detected, generating configuration file \n"
     _config
-    echo ""
-    echo "Configuration file created in .config/kpl"
-    echo ""
+    echo -e "Configuration file created in .config/kpl \n"
     echo "Edit it with your OAuth key (https://spheroid.xyz/kappa/) and relaunch the script"
     exit
   fi
@@ -216,15 +198,14 @@ _fontsize (){
   fi
 }
 
-# Setting working directory, checking for configuration file, generating it if needed
+# Setting working directory, checking for configuration file, generating it if needed.
+# Getting variables from configuration file
 if [ -z "$XDG_CONFIG_HOME" ]; then
   FILE=~/.config/kpl/config
   MAIN_PATH=~/.config/kpl
-  _filecheck
 else
   FILE=$XDG_CONFIG_HOME/kpl/config
   MAIN_PATH=$XDG_CONFIG_HOME/kpl
-  _filecheck
 fi
 
 # Set rofi config file
@@ -245,8 +226,7 @@ else
   SL_FILE=$XDG_CONFIG_HOME/streamlink/config
 fi
 
-# Grab configuration file
-source $MAIN_PATH/config
+_filecheck
 
 # Setting OAuth key, connecting to Twitch API and retrieving follow data
 # This is a modified version of https://github.com/begs/livestreamers/blob/master/live.py
@@ -287,7 +267,7 @@ while true; do
     # Calculate the max width of the streams in characters add 2 for margin and scrollbar
     # -$WIDTH means width in characters rather than % of screen or pixels.
     WIDTH=$(jq -r '.streams[] | "\(.channel.name)^^\(.game)^^\(.viewers)"' $MAIN_PATH/followdata.json | column -t -s "^^" | while read line; do echo -n "$line" | wc -m ; done |  sort -n -u | tail -1)
-    HEIGHT=$(jq -r '.streams[] | .channel.name' /home/johan/.config/kpl/followdata.json | wc -l)
+    HEIGHT=$(jq -r '.streams[] | .channel.name' $MAIN_PATH/followdata.json | wc -l)
     if [[ "$HEIGHT" -gt "$MAX_HEIGHT" ]]; then
         HEIGHT=$MAX_HEIGHT
     fi
