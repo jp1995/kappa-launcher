@@ -33,16 +33,10 @@ For Arch based distros, an [AUR package](https://aur.archlinux.org/packages/kapp
 yay -S kappa-launcher-git
 ```
 
-#### If you want to play around with the script
-```bash
-# Download the script, save it as kpl and make it executable
-$ curl -L https://raw.githubusercontent.com/jp1995/kappa-launcher/master/kpl > kpl && chmod +x kpl
-```
-
 ## Instructions
 The binary (executable) is named ```kpl```.
 
-On first launch the script creates a configuration file in .config/kpl. You must then edit this file with your [Twitch OAuth token](https://spheroid.xyz/kappa/). If you wish, you can also change the STREAM, CHAT and PLAYER options here.
+On first launch the script creates a configuration file in .config/kpl. You must then edit this file with your [Twitch OAuth token](https://spheroid.xyz/kappa/). If you wish, you can also change various other options here.
 
 Once you have done this, simply run the script again.
 
