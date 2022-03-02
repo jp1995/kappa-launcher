@@ -90,7 +90,7 @@ _launcher () {
     echo "launching $STREAM"
     sleep 1
     if [[ "$CHAT" = "chatterino" ]]; then
-      chatterino &
+      chatterino 2> /dev/null &
     elif [[ "$CHAT" = "chatty" ]]; then
       chatty -channel $MAIN -connect
     else
@@ -259,10 +259,11 @@ if [[ "$PAGINATION" != "null" ]]; then
 fi
 
 # Checking if json file is properly populated
-if grep -q "invalid oauth token" "$MAIN_PATH/followdata.json"; then
-  echo "ERROR: json file not populated, make sure you copied your OAuth token correctly"
+if grep -qi "invalid oauth token" "$MAIN_PATH/followdata.json"; then
+  echo -e "ERROR: json file not populated, make sure you copied your OAuth token correctly.
+Alternatively, the token might need to be generated again due to an update."
   exit
-elif grep -q "incorrect user authorization" "$MAIN_PATH/followdata.json"; then
+elif grep -qi "incorrect user authorization" "$MAIN_PATH/followdata.json"; then
     rm $MAIN_PATH/followdata.json
     rm $MAIN_PATH/userdata.json
     echo "ERROR: userdata file corrupted or outdated. File was deleted. Restart the script and things should work."
@@ -288,15 +289,21 @@ while true; do
     # Calculate the max width of the streams in characters add 2 for margin and scrollbar
     # -$WIDTH means width in characters rather than % of screen or pixels.
     WIDTH=$(jq -r '.data[] | "\(.user_name)^^\(.game_name)^^\(.viewer_count)"' $MAIN_PATH/followdata.json | column -t -s "^^" | while read line; do echo -n "$line" | wc -m ; done |  sort -n -u | tail -1)
+    # Reading the characters isn't perfect.
+    # Adding +2 to be safe and +1 for rofi's default scrollbar. Tweak if needed.
+    WIDTH=$(($WIDTH + 1 + 2))
     HEIGHT=$(jq -r '.data[] | .user_name' $MAIN_PATH/followdata.json | wc -l)
     if [[ "$HEIGHT" -gt "$MAX_HEIGHT" ]]; then
         HEIGHT=$MAX_HEIGHT
     fi
-    MAIN=$(echo "$STREAMS" | _rofi -font "$FNAME $FSIZE" -width -$(($WIDTH + 3)) -lines $HEIGHT -theme-str 'entry { placeholder: ""; } inputbar { children: [prompt, entry];}' \
+    MAIN=$(echo "$STREAMS" | _rofi -font "$FNAME $FSIZE" -theme-str 'window { width: '$WIDTH'ch; } listview { lines: '$HEIGHT'; } entry { placeholder: ""; } inputbar { children: [prompt, entry]; }' \
     -p "Followed channels: " | cut -d ' ' -f 1)
   else
+    # Longest possible twitch username
+    WIDTH=25
+    HEIGHT=$(jq -r '.data[] | .user_name' $MAIN_PATH/followdata.json | wc -l)
     STREAMS=$(jq -r '.data[].user_name' $MAIN_PATH/followdata.json)
-    MAIN=$(echo "$STREAMS" | _rofi -theme-str 'entry { placeholder: ""; } inputbar { children: [prompt, entry];}' \
+    MAIN=$(echo "$STREAMS" | _rofi -theme-str 'window { width: '$WIDTH'ch; } listview { lines: '$HEIGHT'; } entry { placeholder: ""; } inputbar { children: [prompt, entry];}' \
     -p "Followed channels: ")
   fi
 
