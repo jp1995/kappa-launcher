@@ -15,6 +15,8 @@ Kappa Launcher is a simple bash script that uses rofi to display and launch your
 * Streams that you don't follow can also be looked up and launched.
 
 ## Installation
+### LATEST VERSION: 01 MARCH 2022. HELIX API MIGRATION. UPDOOT UR SHIT.
+
 ### Install using ```make```
 ```bash
 # Clone the repo

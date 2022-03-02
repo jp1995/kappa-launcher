@@ -175,7 +175,7 @@ _fontname () {
   fi
   # If FONT set in xresources, test if its monospaced before using or
   # default to mono (family class which fontconfig will pick from monospaced fonts)
-  FNAME=$(rofi -dump-xresources | grep font | cut -d: -f 2 | sed 's/^\ *//g' | awk '{$NF=""; print $0}' | sed 's/\ $//')
+  FNAME=$(rofi -dump-xresources 2> /dev/null | grep font | cut -d: -f 2 | sed 's/^\ *//g' | awk '{$NF=""; print $0}' | sed 's/\ $//')
   if [[ $FNAME != "mono" ]]; then
    _monospaced "$FNAME"
   fi
@@ -200,7 +200,7 @@ _fontsize (){
     return
   fi
   # If font is set from xresources else use default of 12
-  FSIZE=$(rofi -dump-xresources | grep font | cut -d: -f 2  | sed 's/^\ *//' | awk '{print $NF}')
+  FSIZE=$(rofi -dump-xresources 2> /dev/null | grep font | cut -d: -f 2  | sed 's/^\ *//' | awk '{print $NF}')
   if [[ ! -z $FSIZE ]]; then
     export FSIZE
   else
@@ -240,20 +240,32 @@ _filecheck
 
 # Setting OAuth key, connecting to Twitch API and retrieving follow data
 # This is a modified version of https://github.com/begs/livestreamers/blob/master/live.py
+if [[ ! -f $MAIN_PATH/userdata.json ]]; then
+    curl -s -H "Client-ID: 3lyhpjkzellmam3843w7eq3es84375" \
+    -H "Authorization: Bearer $OAUTH" \
+    -X GET "https://api.twitch.tv/helix/users" > $MAIN_PATH/userdata.json
+fi
+USER_ID=$(jq -r '.data[].id' $MAIN_PATH/userdata.json)
 
-curl -s -o $MAIN_PATH/followdata.json -H "Accept: application/vnd.twitchtv.v5+json" \
--H "Client-ID: 3lyhpjkzellmam3843w7eq3es84375" \
--H "Authorization: OAuth $OAUTH" \
--X GET "https://api.twitch.tv/kraken/streams/followed?limit=100"
-curl -s -H "Accept: application/vnd.twitchtv.v5+json" \
--H "Client-ID: 3lyhpjkzellmam3843w7eq3es84375" \
--H "Authorization: OAuth $OAUTH" \
--X GET "https://api.twitch.tv/kraken/streams/followed?limit=100&offset=100" >> $MAIN_PATH/followdata.json
+curl -s -H "Client-ID: 3lyhpjkzellmam3843w7eq3es84375" \
+-H "Authorization: Bearer $OAUTH" \
+-X GET "https://api.twitch.tv/helix/streams/followed?user_id=$USER_ID" > $MAIN_PATH/followdata.json
+PAGINATION=$(jq -r '.pagination.cursor' $MAIN_PATH/followdata.json)
+
+if [[ "$PAGINATION" != "null" ]]; then
+    curl -s -H "Client-ID: 3lyhpjkzellmam3843w7eq3es84375" \
+    -H "Authorization: Bearer $OAUTH" \
+    -X GET "https://api.twitch.tv/helix/streams/followed?user_id=$USER_ID&after=$PAGINATION" >> $MAIN_PATH/followdata.json
+fi
 
 # Checking if json file is properly populated
 if grep -q "invalid oauth token" "$MAIN_PATH/followdata.json"; then
   echo "ERROR: json file not populated, make sure you copied your OAuth token correctly"
   exit
+elif grep -q "incorrect user authorization" "$MAIN_PATH/followdata.json"; then
+    rm $MAIN_PATH/followdata.json
+    rm $MAIN_PATH/userdata.json
+    echo "ERROR: userdata file corrupted or outdated. File was deleted. Restart the script and things should work."
 else
   echo "json file successfully populated"
 fi
@@ -269,22 +281,21 @@ while true; do
   # Expanded view output name^^game^^viewers (as string) from jq to be
   # formatted by column or only name if minimal or not specified
   if [[ $VIEW = "expanded" ]]; then
-    STREAMS=$(jq -r '.streams[] | "\(.channel.name)^^\(.game)^^\(.viewers)"' $MAIN_PATH/followdata.json | column -t -s "^^")
-    STATUS=$(jq -r '.streams[] | .channel.status' $MAIN_PATH/followdata.json)
+    STREAMS=$(jq -r '.data[] | "\(.user_name)^^\(.game_name)^^\(.viewer_count)"' $MAIN_PATH/followdata.json | column -t -s "^^")
     # Get or discover the font to be used for expanded view
     _fontname
     _fontsize
     # Calculate the max width of the streams in characters add 2 for margin and scrollbar
     # -$WIDTH means width in characters rather than % of screen or pixels.
-    WIDTH=$(jq -r '.streams[] | "\(.channel.name)^^\(.game)^^\(.viewers)"' $MAIN_PATH/followdata.json | column -t -s "^^" | while read line; do echo -n "$line" | wc -m ; done |  sort -n -u | tail -1)
-    HEIGHT=$(jq -r '.streams[] | .channel.name' $MAIN_PATH/followdata.json | wc -l)
+    WIDTH=$(jq -r '.data[] | "\(.user_name)^^\(.game_name)^^\(.viewer_count)"' $MAIN_PATH/followdata.json | column -t -s "^^" | while read line; do echo -n "$line" | wc -m ; done |  sort -n -u | tail -1)
+    HEIGHT=$(jq -r '.data[] | .user_name' $MAIN_PATH/followdata.json | wc -l)
     if [[ "$HEIGHT" -gt "$MAX_HEIGHT" ]]; then
         HEIGHT=$MAX_HEIGHT
     fi
     MAIN=$(echo "$STREAMS" | _rofi -font "$FNAME $FSIZE" -width -$(($WIDTH + 3)) -lines $HEIGHT -theme-str 'entry { placeholder: ""; } inputbar { children: [prompt, entry];}' \
     -p "Followed channels: " | cut -d ' ' -f 1)
   else
-    STREAMS=$(jq -r '.streams[].channel.name' $MAIN_PATH/followdata.json)
+    STREAMS=$(jq -r '.data[].user_name' $MAIN_PATH/followdata.json)
     MAIN=$(echo "$STREAMS" | _rofi -theme-str 'entry { placeholder: ""; } inputbar { children: [prompt, entry];}' \
     -p "Followed channels: ")
   fi
@@ -327,9 +338,9 @@ Back to Followed channels" | _rofi -markup-rows -theme-str 'inputbar { children:
       _launcher
     fi
     # Retrieving additional information
-    CURRENT_GAME=$(jq -r ".streams[].channel | select(.name==\"$MAIN\") | .game"  $MAIN_PATH/followdata.json)
-    STATUS=$(jq -r ".streams[].channel | select(.name==\"$MAIN\") | .status"  $MAIN_PATH/followdata.json)
-    VIEWERS=$(jq -r ".streams[] | select(.channel.name==\"$MAIN\") | .viewers"  $MAIN_PATH/followdata.json)
+    CURRENT_GAME=$(jq -r ".data[] | select(.user_name==\"$MAIN\") | .game_name"  $MAIN_PATH/followdata.json)
+    STATUS=$(jq -r ".data[] | select(.user_name==\"$MAIN\") | .title"  $MAIN_PATH/followdata.json)
+    VIEWERS=$(jq -r ".data[] | select(.user_name==\"$MAIN\") | .viewer_count"  $MAIN_PATH/followdata.json)
 
     # Prompting with stream info and options
     while true; do
