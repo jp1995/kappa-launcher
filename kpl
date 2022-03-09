@@ -282,17 +282,17 @@ while true; do
   # Expanded view output name^^game^^viewers (as string) from jq to be
   # formatted by column or only name if minimal or not specified
   if [[ $VIEW = "expanded" ]]; then
-    STREAMS=$(jq -r '.data[] | "\(.user_name)^^\(.game_name)^^\(.viewer_count)"' $MAIN_PATH/followdata.json | column -t -s "^^")
+    STREAMS=$(jq -r '.data[] | "\(.user_login)^^\(.game_name)^^\(.viewer_count)"' $MAIN_PATH/followdata.json | column -t -s "^^")
     # Get or discover the font to be used for expanded view
     _fontname
     _fontsize
     # Calculate the max width of the streams in characters add 2 for margin and scrollbar
     # -$WIDTH means width in characters rather than % of screen or pixels.
-    WIDTH=$(jq -r '.data[] | "\(.user_name)^^\(.game_name)^^\(.viewer_count)"' $MAIN_PATH/followdata.json | column -t -s "^^" | while read line; do echo -n "$line" | wc -m ; done |  sort -n -u | tail -1)
+    WIDTH=$(jq -r '.data[] | "\(.user_login)^^\(.game_name)^^\(.viewer_count)"' $MAIN_PATH/followdata.json | column -t -s "^^" | while read line; do echo -n "$line" | wc -m ; done |  sort -n -u | tail -1)
     # Reading the characters isn't perfect.
     # Adding +2 to be safe and +1 for rofi's default scrollbar. Tweak if needed.
     WIDTH=$(($WIDTH + 1 + 2))
-    HEIGHT=$(jq -r '.data[] | .user_name' $MAIN_PATH/followdata.json | wc -l)
+    HEIGHT=$(jq -r '.data[] | .user_login' $MAIN_PATH/followdata.json | wc -l)
     if [[ "$HEIGHT" -gt "$MAX_HEIGHT" ]]; then
         HEIGHT=$MAX_HEIGHT
     fi
@@ -301,8 +301,8 @@ while true; do
   else
     # Longest possible twitch username
     WIDTH=25
-    HEIGHT=$(jq -r '.data[] | .user_name' $MAIN_PATH/followdata.json | wc -l)
-    STREAMS=$(jq -r '.data[].user_name' $MAIN_PATH/followdata.json)
+    HEIGHT=$(jq -r '.data[] | .user_login' $MAIN_PATH/followdata.json | wc -l)
+    STREAMS=$(jq -r '.data[].user_login' $MAIN_PATH/followdata.json)
     MAIN=$(echo "$STREAMS" | _rofi -theme-str 'window { width: '$WIDTH'ch; } listview { lines: '$HEIGHT'; } entry { placeholder: ""; } inputbar { children: [prompt, entry];}' \
     -p "Followed channels: ")
   fi
@@ -314,7 +314,7 @@ while true; do
   if [[ "$STREAMS" != *"$MAIN"* ]]; then
     while true; do
       _customdata
-      if grep -q "user_name" "$MAIN_PATH/customdata.json" ; then
+      if grep -q "user_login" "$MAIN_PATH/customdata.json" ; then
         if [[ $QUICK = "true" ]]; then
           _multiple
           _launcher
@@ -345,9 +345,9 @@ Back to Followed channels" | _rofi -markup-rows -theme-str 'inputbar { children:
       _launcher
     fi
     # Retrieving additional information
-    CURRENT_GAME=$(jq -r ".data[] | select(.user_name==\"$MAIN\") | .game_name"  $MAIN_PATH/followdata.json)
-    STATUS=$(jq -r ".data[] | select(.user_name==\"$MAIN\") | .title"  $MAIN_PATH/followdata.json)
-    VIEWERS=$(jq -r ".data[] | select(.user_name==\"$MAIN\") | .viewer_count"  $MAIN_PATH/followdata.json)
+    CURRENT_GAME=$(jq -r ".data[] | select(.user_login==\"$MAIN\") | .game_name"  $MAIN_PATH/followdata.json)
+    STATUS=$(jq -r ".data[] | select(.user_login==\"$MAIN\") | .title"  $MAIN_PATH/followdata.json)
+    VIEWERS=$(jq -r ".data[] | select(.user_login==\"$MAIN\") | .viewer_count"  $MAIN_PATH/followdata.json)
 
     # Prompting with stream info and options
     while true; do
