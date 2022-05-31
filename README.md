@@ -38,7 +38,7 @@ yay -S kappa-launcher-git
 ## Instructions
 The binary (executable) is named ```kpl```.
 
-On first launch the script creates a configuration file in .config/kpl. You must then edit this file with your [Twitch OAuth token](https://spheroid.xyz/kappa/). If you wish, you can also change various other options here.
+On first launch the script creates a configuration file in .config/kpl. You must then edit this file with your [Twitch OAuth token](https://jp1995.github.io/kappa/). If you wish, you can also change various other options here.
 
 Once you have done this, simply run the script again.
 
