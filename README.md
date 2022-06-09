@@ -34,6 +34,7 @@ For Arch based distros, an [AUR package](https://aur.archlinux.org/packages/kapp
 ```bash
 yay -S kappa-launcher-git
 ```
+When updating, you may get an error like `the local download is not a clone of ... this repo`. Github deprecated the protocol previously used in the source URL of the PKGBUILD, and so it had to be updated. Just do a cleanbuild. It's a one time thing.
 
 ## Instructions
 The binary (executable) is named ```kpl```.
