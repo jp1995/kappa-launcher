@@ -72,7 +72,7 @@ _filecheck () {
     echo -e "First start detected, generating configuration file \n"
     _config
     echo -e "Configuration file created in .config/kpl \n"
-    echo "Edit it with your OAuth key (https://spheroid.xyz/kappa/) and relaunch the script"
+    echo "Edit it with your OAuth key (https://jp1995.github.io/kappa/) and relaunch the script"
     exit
   fi
 }
@@ -147,6 +147,11 @@ _choice () {
 }
 
 _monospaced () {
+  # The default font  mono in kpl config is not in fc-list for some reason
+  if [ $1 = "mono" ]; then
+    export MONO=1
+    return
+  fi
   # Check if font is in list of monospaced fonts
   MONOFONTS=$(fc-list :mono | sed 's/:\ /:/' | awk -F : -v quote="'" '{print quote $2 quote}' | sort -u)
   export MONO=$(echo "$MONOFONTS" | grep -ic "'$*'")
@@ -158,6 +163,7 @@ _fontname () {
     FNAME=$(echo $FONT | awk -F " " '{$NF=""; print $0}' | sed 's/\ $//')
     _monospaced "$FNAME"
     if [[ $MONO -eq 1 ]]; then
+      echo "Using monospaced font found kpl config"
       export FNAME="$FNAME"
       return
     else
@@ -165,26 +171,20 @@ _fontname () {
     fi
   fi
   # If FONT set in rofi config, test if its monospaced before using
-  FNAME=$(grep -e "^[[:space:]].*font:" $R_FILE | cut -d \" -f 2 | awk '{$NF=""; print $0}' | sed 's/\ $//')
-  if [[ ! -z $FNAME ]]; then
-  _monospaced "$FNAME"
-    if [[ $MONO -eq 1 ]]; then
-      export FNAME="$FNAME"
-      return
+  if [ -f $R_FILE ]; then
+    FNAME=$(grep -e "^[[:space:]].*font:" $R_FILE | cut -d \" -f 2 | awk '{$NF=""; print $0}' | sed 's/\ $//')
+    if [[ ! -z $FNAME ]]; then
+    _monospaced "$FNAME"
+      if [[ $MONO -eq 1 ]]; then
+        echo "Using monospaced font found in rofi config"
+        export FNAME="$FNAME"
+        return
+      fi
     fi
   fi
-  # If FONT set in xresources, test if its monospaced before using or
-  # default to mono (family class which fontconfig will pick from monospaced fonts)
-  FNAME=$(rofi -dump-xresources 2> /dev/null | grep font | cut -d: -f 2 | sed 's/^\ *//g' | awk '{$NF=""; print $0}' | sed 's/\ $//')
-  if [[ $FNAME != "mono" ]]; then
-   _monospaced "$FNAME"
-  fi
-  if [[ $MONO -eq 1 ]]; then
-     export FNAME="$FNAME"
-     return
-   else
-     FNAME="mono"
-  fi
+  # Default to mono
+  echo "No font set in kpl or rofi configs, defaulting to mono"
+  FNAME="mono"
 }
 
 _fontsize (){
@@ -194,18 +194,15 @@ _fontsize (){
     return
   fi
   # If font is set in rofi config
-  FSIZE=$(grep -e "^[[:space:]].*font:" $R_FILE | cut -d \" -f 2 | awk '{print $NF}')
-  if [[ ! -z $FSIZE ]]; then
-    export FSIZE
-    return
+  if [ -f $R_FILE ]; then
+    FSIZE=$(grep -e "^[[:space:]].*font:" $R_FILE | cut -d \" -f 2 | awk '{print $NF}')
+    if [[ ! -z $FSIZE ]]; then
+      export FSIZE
+      return
+    fi
   fi
-  # If font is set from xresources else use default of 12
-  FSIZE=$(rofi -dump-xresources 2> /dev/null | grep font | cut -d: -f 2  | sed 's/^\ *//' | awk '{print $NF}')
-  if [[ ! -z $FSIZE ]]; then
-    export FSIZE
-  else
-    export FSIZE=12
-  fi
+  # Default to 12
+  export FSIZE=12
 }
 
 # Setting working directory, checking for configuration file, generating it if needed.
