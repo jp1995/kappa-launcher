@@ -268,6 +268,31 @@ else
   echo "json file successfully populated"
 fi
 
+# Check if userdata.json exists and is not empty
+if [ ! -s "$MAIN_PATH/userdata.json" ]; then
+    echo "ERROR: userdata.json is empty or does not exist."
+    exit 1
+fi
+
+# Check if followdata.json exists and is not empty
+if [ ! -s "$MAIN_PATH/followdata.json" ]; then
+    echo "ERROR: followdata.json is empty or does not exist."
+    exit 1
+fi
+
+# Check if userdata.json contains valid data
+USER_ID=$(jq -r '.data[].id' $MAIN_PATH/userdata.json)
+if [ -z "$USER_ID" ]; then
+    echo "ERROR: userdata.json does not contain valid data."
+    exit 1
+fi
+
+# Check if followdata.json contains valid data
+if ! jq -e '.data | length > 0' $MAIN_PATH/followdata.json >/dev/null; then
+    echo "ERROR: followdata.json does not contain valid data."
+    exit 1
+fi
+
 # Getting names of currently live streams
 while true; do
   # Checking for quality value in streamlink configuration file
